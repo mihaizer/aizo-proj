@@ -1,0 +1,12 @@
+# Скомпилированные файлы
+build/
+bin/
+*.o
+*.so
+*.dylib
+
+# Мусор ОС и IDE
+.DS_Store
+.vscode/
+.idea/
+cmake-build-debug/
