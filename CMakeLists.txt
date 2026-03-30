@@ -12,3 +12,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(aizo_proj
   src/main.cpp
 )
+
+target_include_directories(aizo_proj PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
