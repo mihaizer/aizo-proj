@@ -1,0 +1,20 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "clion-brew-gcc15",
+      "displayName": "CLion + Homebrew GCC 15 / CMake 3.31.6",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/cmake-build-debug",
+      "environment": {
+        "CC": "/opt/homebrew/bin/gcc-15",
+        "CXX": "/opt/homebrew/bin/g++-15"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "/opt/homebrew/bin/gcc-15",
+        "CMAKE_CXX_COMPILER": "/opt/homebrew/bin/g++-15",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    }
+  ]
+}
