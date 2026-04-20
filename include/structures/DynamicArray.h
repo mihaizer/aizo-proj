@@ -11,7 +11,8 @@ private:
     int size;
 
 public:
-    // Konstruktor
+    /// Konstruktor.
+    /// \param n długość (liczba elementów) tablicy dynamicznej.
     DynamicArray(int n)
     {
         if (n <= 0)
@@ -27,8 +28,8 @@ public:
     }
 
     // Zakaz kopiowania struktury (ochrona przed wyciekami i awariami)
-    // DynamicArray(const DynamicArray&) = delete;
-    // DynamicArray& operator=(const DynamicArray&) = delete;
+    DynamicArray(const DynamicArray &) = delete;
+    DynamicArray &operator=(const DynamicArray &) = delete;
 
     // Dostęp po indeksie (jak w zwykłej tablicy)
     T &operator[](int index)
