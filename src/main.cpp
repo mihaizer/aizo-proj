@@ -3,14 +3,18 @@
 #include "Parameters.h"
 #include "structures/DynamicArray.h"
 
-int main(int argc, char **argv) {
-    if (argc > 1) {
-        if (Parameters::readParameters(argc - 1, argv + 1) != 0) {
+int main(int argc, char **argv)
+{
+    if (argc > 1)
+    {
+        if (Parameters::readParameters(argc - 1, argv + 1) != 0)
+        {
             std::cerr << "Failed to parse parameters.\n";
             return 1;
         }
 
-        if (Parameters::runMode == Parameters::RunModes::help) {
+        if (Parameters::runMode == Parameters::RunModes::help)
+        {
             Parameters::help();
             return 0;
         }
@@ -44,7 +48,7 @@ int main(int argc, char **argv) {
     std::cout << "Pierwszy znak: " << charArr[0] << "\n";
     charArr.print();
 
-    DynamicArray<int> anotherArr(5);
-    anotherArr = myArr;
+    // DynamicArray<int> anotherArr(5);
+    // anotherArr = myArr;
     return 0;
 }

@@ -1,15 +1,14 @@
+﻿#pragma once
+
 class IStructure
 {
 public:
     virtual ~IStructure() = default;
 
-    virtual int size() const = 0;
-    virtual bool isEmpty() const = 0;
+    virtual int size() const = 0; // = 0 znaczy ze niema realizacji w bazowym klasie
 
-    virtual int &at(int index) = 0;
-    virtual const int &at(int index) const = 0;
-
+    virtual int &operator[](int index) = 0;             // dostemp przez array[i]
+    virtual const int &operator[](int index) const = 0; // dla const DynamicArray arr(5); arr[0] = 7; niemozna
     virtual void pushBack(const int &value) = 0;
-    virtual void clear() = 0;
     virtual void swap(int i, int j) = 0;
 };
