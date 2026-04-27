@@ -13,6 +13,12 @@ add_executable(aizo_proj
   src/main.cpp
 )
 
+target_compile_options(aizo_proj PRIVATE
+  -Wall
+  -Wextra
+  -Werror
+)
+
 target_include_directories(aizo_proj PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
