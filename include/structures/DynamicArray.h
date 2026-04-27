@@ -80,11 +80,8 @@ public:
             int newCapacity = capacity * 2;
             T *newData = new T[newCapacity];
 
-            // Kopiowanie starych danych do nowej, większej tablicy
-            for (int i = 0; i < currentSize; i++)
-            {
-                newData[i] = data[i];
-            }
+            // Тупо копируем весь блок памяти, так как у нас только простые типы чисел
+            std::memcpy(newData, data, currentSize * sizeof(T));
 
             // Zwolnienie starej pamięci i podmiana wskaźnika
             delete[] data;
