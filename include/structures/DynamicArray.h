@@ -11,15 +11,25 @@ class DynamicArray : public IStructure<T>
 private:
     T *data;
     int currentSize;
+    int capacity;
 
 public:
     // Konstruktor
-    DynamicArray(int n)
+    // Dodana została wartość domyślna (n = 0), aby można było utworzyć pustą tablicę
+    DynamicArray(int n = 0)
     {
-        if (n <= 0)
-            throw std::invalid_argument("Size must be > 0");
+        if (n < 0)
+            throw std::invalid_argument("Size must be >= 0");
+
         currentSize = n;
-        data = new T[currentSize];
+
+        if (n == 0)
+            // zeby mozna było zwiekszyc przy mnozeniu na 2
+            capacity = 1;
+        else
+            capacity = n;
+
+        data = new T[capacity];
     }
 
     // Destruktor (zwalnianie pamięci)
@@ -29,6 +39,7 @@ public:
     }
 
     // Zakaz kopiowania struktury (ochrona przed wyciekami i awariami)
+    // todo fix dodac sesowny mechanizm kopiowania
     DynamicArray(const DynamicArray &) = delete;
     DynamicArray &operator=(const DynamicArray &) = delete;
 
@@ -60,20 +71,29 @@ public:
         return currentSize;
     }
 
-    // тут какой то буллшит
+    // Dodawanie elementu na koniec tablicy dynamicznej
     void pushBack(const T &value) override
     {
-        T *newData = new T[currentSize + 1];
-
-        for (int i = 0; i < currentSize; i++)
+        // Jeżeli nie ma już wolnego miejsca, trzeba zaalokować większą tablicę
+        if (currentSize == capacity)
         {
-            newData[i] = data[i];
+            int newCapacity = capacity * 2;
+            T *newData = new T[newCapacity];
+
+            // Kopiowanie starych danych do nowej, większej tablicy
+            for (int i = 0; i < currentSize; i++)
+            {
+                newData[i] = data[i];
+            }
+
+            // Zwolnienie starej pamięci i podmiana wskaźnika
+            delete[] data;
+            data = newData;
+            capacity = newCapacity;
         }
 
-        newData[currentSize] = value;
-
-        delete[] data;
-        data = newData;
+        // Po zapewnieniu miejsca można dopisać nowy element na końcu
+        data[currentSize] = value;
         currentSize++;
     }
 
@@ -95,5 +115,11 @@ public:
             std::cout << data[i] << " ";
         }
         std::cout << std::endl;
+    }
+
+    // Metoda pomocnicza do sprawdzania aktualnej pojemności tablicy
+    int getCapacity() const
+    {
+        return capacity;
     }
 };
