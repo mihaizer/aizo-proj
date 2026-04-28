@@ -39,8 +39,19 @@ public:
         delete[] data;
     }
 
-    // Zakaz konstruktora kopiującego
-    DynamicArray(const DynamicArray &) = delete;
+    // Konstruktor kopiujący (głęboka kopia)
+    DynamicArray(const DynamicArray &other)
+    {
+        // 1. Kopiujemy rozmiar i pojemność.
+        currentSize = other.currentSize;
+        capacity = other.capacity;
+
+        // 2. Przydzielamy nową pamięć.
+        data = new T[capacity];
+
+        // 3. Kopiujemy dane ze starej tablicy do nowej.
+        std::memcpy(data, other.data, currentSize * sizeof(T));
+    }
 
     // Operator przypisania kopiującego (głęboka kopia z czyszczeniem)
     DynamicArray &operator=(const DynamicArray &other)
