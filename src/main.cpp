@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdexcept>
 
 #include "Parameters.h"
 #include "structures/DynamicArray.h"
@@ -48,7 +49,58 @@ int main(int argc, char **argv)
     std::cout << "Pierwszy znak: " << charArr[0] << "\n";
     charArr.print();
 
-    // DynamicArray<int> anotherArr(5);
-    // anotherArr = myArr;
+    std::cout << "\nTest pushBack i powiekszania tablicy:\n";
+    DynamicArray<int> pushArr;
+    pushArr.pushBack(10);
+    pushArr.pushBack(20);
+    pushArr.pushBack(30);
+    std::cout << "Rozmiar po pushBack: " << pushArr.size() << "\n";
+    std::cout << "Pojemnosc po pushBack: " << pushArr.getCapacity() << "\n";
+    std::cout << "Zawartosc pushArr: ";
+    pushArr.print();
+
+    std::cout << "\nTest swap:\n";
+    pushArr.swap(0, 2);
+    std::cout << "Po swap(0, 2): ";
+    pushArr.print();
+
+    std::cout << "\nTest konstruktora kopiujacego:\n";
+    DynamicArray<int> copiedArr = pushArr;
+    copiedArr[0] = 999;
+    std::cout << "Oryginal po zmianie kopii: ";
+    pushArr.print();
+    std::cout << "Kopia po zmianie: ";
+    copiedArr.print();
+
+    std::cout << "\nTest operatora przypisania:\n";
+    DynamicArray<int> assignedArr;
+    assignedArr.pushBack(-1);
+    assignedArr = pushArr;
+    assignedArr[1] = 777;
+    std::cout << "Oryginal po zmianie przypisanej tablicy: ";
+    pushArr.print();
+    std::cout << "Tablica po przypisaniu i zmianie: ";
+    assignedArr.print();
+
+    std::cout << "\nTest przypisania do samego siebie:\n";
+    DynamicArray<int> &sameArr = assignedArr;
+    assignedArr = sameArr;
+    std::cout << "Po assignedArr = assignedArr: ";
+    assignedArr.print();
+
+    std::cout << "\nTest const operator[]:\n";
+    const DynamicArray<int> constArr = pushArr;
+    std::cout << "constArr[1]: " << constArr[1] << "\n";
+
+    std::cout << "\nTest wyjscia poza zakres:\n";
+    try
+    {
+        std::cout << pushArr[99] << "\n";
+    }
+    catch (const std::out_of_range &error)
+    {
+        std::cout << "Zlapano wyjatek: " << error.what() << "\n";
+    }
+
     return 0;
 }
