@@ -39,7 +39,9 @@ public:
         delete[] data;
     }
 
-    // Konstruktor kopiujący (głęboka kopia)
+    // Konstruktor kopiujący
+    // Copy Constructor
+    // DynamicArray<int> arr2 = arr1;
     DynamicArray(const DynamicArray &other)
     {
         // 1. Kopiujemy rozmiar i pojemność.
@@ -53,7 +55,10 @@ public:
         std::memcpy(data, other.data, currentSize * sizeof(T));
     }
 
-    // Operator przypisania kopiującego (głęboka kopia z czyszczeniem)
+    // Operator przypisania kopiującego
+    // Copy Assignment Operator
+    // arr2 = arr1;
+
     DynamicArray &operator=(const DynamicArray &other)
     {
         // 1. Ochrona przed przypisaniem obiektu do samego siebie (arr = arr;)
@@ -78,6 +83,7 @@ public:
     }
 
     // Dostęp po indeksie (jak w zwykłej tablicy)
+    // Przykład użycia: arr[0] = 10;
     T &operator[](int index) override
     {
         if (index < 0 || index >= currentSize)
@@ -86,6 +92,8 @@ public:
         return data[index];
     }
 
+    // Przykład użycia: int value = arr[0];
+    // const wskaznik na element ktory nie mozna zmienic, drugi const obiekt nie mozna zmienic
     const T &operator[](int index) const override
     {
         if (index < 0 || index >= currentSize)
@@ -96,11 +104,6 @@ public:
 
     // Pobierz rozmiar
     int size() const override
-    {
-        return currentSize;
-    }
-
-    int getSize() const
     {
         return currentSize;
     }

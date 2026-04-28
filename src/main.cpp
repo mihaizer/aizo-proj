@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     myArr[3] = 2138;
     myArr[4] = -4;
 
-    std::cout << "Rozmiar tablicy: " << myArr.getSize() << "\n";
+    std::cout << "Rozmiar tablicy: " << myArr.size() << "\n";
     std::cout << "Element pod indeksem 3: " << myArr[3] << "\n";
 
     std::cout << "Cala tablica: ";
