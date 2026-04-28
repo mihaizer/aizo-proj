@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstring>
 #include <iostream>
 #include <stdexcept>
 
@@ -38,10 +39,32 @@ public:
         delete[] data;
     }
 
-    // Zakaz kopiowania struktury (ochrona przed wyciekami i awariami)
-    // todo fix dodac sesowny mechanizm kopiowania
+    // Zakaz konstruktora kopiującego
     DynamicArray(const DynamicArray &) = delete;
-    DynamicArray &operator=(const DynamicArray &) = delete;
+
+    // Operator przypisania kopiującego (głęboka kopia z czyszczeniem)
+    DynamicArray &operator=(const DynamicArray &other)
+    {
+        // 1. Ochrona przed przypisaniem obiektu do samego siebie (arr = arr;)
+        // Jeśli adresy obiektów są takie same, nic nie robimy,
+        // żeby nie usunąć własnych danych.
+        if (this == &other)
+            return *this;
+
+        // 2. Usuwamy stare dane, które znajdowały się w bieżącej tablicy.
+        delete[] data;
+
+        // 3. Kopiujemy nowy rozmiar i pojemność.
+        currentSize = other.currentSize;
+        capacity = other.capacity;
+
+        // 4. Przydzielamy nową pamięć i kopiujemy dane.
+        data = new T[capacity];
+        std::memcpy(data, other.data, currentSize * sizeof(T));
+
+        // Zwracamy referencję do bieżącego obiektu zgodnie ze standardową praktyką C++.
+        return *this;
+    }
 
     // Dostęp po indeksie (jak w zwykłej tablicy)
     T &operator[](int index) override
@@ -80,7 +103,7 @@ public:
             int newCapacity = capacity * 2;
             T *newData = new T[newCapacity];
 
-            // Тупо копируем весь блок памяти, так как у нас только простые типы чисел
+            // Kopiujemy cały blok pamięci, ponieważ używamy prostych typów liczbowych.
             std::memcpy(newData, data, currentSize * sizeof(T));
 
             // Zwolnienie starej pamięci i podmiana wskaźnika
