@@ -16,5 +16,15 @@
 - [x] Confirm `--distribution` parsing through the installed library.
 - [x] Confirm the branch builds cleanly.
 
+## PR 3 - feature/cli-skeleton
+- [x] Replace the temporary `DynamicArray` demo in `main.cpp`.
+- [x] Keep command-line parsing inside the professor `Parameters` library.
+- [x] Add project help notes for the grade 3.0 scope.
+- [x] Validate supported grade 3.0 algorithms, structures and data types.
+- [x] Validate benchmark distribution values from `Parameters v1.2`.
+- [x] Return clear errors for options outside the grade 3.0 scope.
+- [x] Confirm the branch builds cleanly.
+- [x] Smoke-test valid and invalid CLI examples.
+
 ## Next
-- [ ] PR 3: add the grade 3.0 CLI skeleton and enum validation.
+- [ ] PR 4: add input/output file handling and custom ascending verification.
