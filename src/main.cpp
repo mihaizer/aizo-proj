@@ -1,6 +1,10 @@
 #include <iostream>
+#include <string>
 
 #include "Parameters.h"
+#include "io/DataFile.h"
+#include "structures/DynamicArray.h"
+#include "utils/SortValidation.h"
 
 namespace
 {
@@ -154,6 +158,23 @@ namespace
         return 0;
     }
 
+    int validateSingleFileParameters()
+    {
+        // Ta kontrola dotyczy tylko trybu singleFile; benchmark nie korzysta z pliku wejsciowego jako zrodla danych.
+        if (Parameters::runMode != Parameters::RunModes::singleFile)
+        {
+            return 0;
+        }
+
+        // Bez inputFile nie da sie wykonac pojedynczego testu, bo dane maja pochodzic z pliku w formacie zadania.
+        if (Parameters::inputFile.empty())
+        {
+            return failMissing("--inputFile");
+        }
+
+        return 0;
+    }
+
     // Rozklad danych ma sens tylko w benchmarku; w trybie singleFile kolejnosc danych wynika z pliku.
     int validateBenchmarkParameters()
     {
@@ -191,23 +212,105 @@ namespace
             return commonResult;
         }
 
+        // Po parametrach wspolnych sprawdzamy wymagania zalezne od trybu pracy.
+        // Dla singleFile jest to przede wszystkim obecnosc pliku wejsciowego.
+        int singleFileResult = validateSingleFileParameters();
+        if (singleFileResult != 0)
+        {
+            return singleFileResult;
+        }
+
         return validateBenchmarkParameters();
     }
 
-    // Na tym etapie program rozpoznaje poprawny tryb i parametry; szczegoly wykonania beda podlaczone osobno.
-    void printValidatedModeMessage()
+    template <typename T>
+    int runSingleFileForType()
+    {
+        // Typ T jest wybierany na podstawie Parameters::dataType, a sam odczyt korzysta z tego samego formatu:
+        // pierwsza liczba oznacza rozmiar, kolejne tokeny to elementy struktury.
+        DynamicArray<T> values;
+        std::string error;
+        if (!DataFile::readValues(Parameters::inputFile, values, error))
+        {
+            std::cerr << "ERROR: " << error << "\n";
+            return 1;
+        }
+
+        std::cout << "Loaded " << values.size() << " values from " << Parameters::inputFile << ".\n";
+
+        // Algorytmy sortowania beda podlaczone w kolejnym kroku, dlatego tutaj nie poprawiamy jeszcze kolejnosci.
+        // Walidacja pozwala sprawdzic sam pipeline plikow bez udawania, ze sortowanie juz dziala.
+        if (!isSortedAscending(values))
+        {
+            std::cerr << "ERROR: loaded data is not sorted ascending yet.\n";
+            std::cerr << "Sorting algorithms are not connected in this step, so no sorted output was written.\n";
+            return 1;
+        }
+
+        // Plik wyjsciowy jest opcjonalny w singleFile, wiec brak --outputFile nie jest bledem.
+        if (Parameters::outputFile.empty())
+        {
+            std::cout << "Data is sorted ascending. No output file was requested.\n";
+            return 0;
+        }
+
+        // Zapisujemy ten sam format, ktory byl wymagany na wejsciu: rozmiar i wartosci w kolejnych liniach.
+        if (!DataFile::writeValues(Parameters::outputFile, values, error))
+        {
+            std::cerr << "ERROR: " << error << "\n";
+            return 1;
+        }
+
+        std::cout << "Data is sorted ascending and was written to " << Parameters::outputFile << ".\n";
+        return 0;
+    }
+
+    int runSingleFile()
+    {
+        // Biblioteka Parameters zapisuje typ jako enum, a tutaj wybieramy konkretna instancje szablonu.
+        switch (Parameters::dataType)
+        {
+        case Parameters::DataTypes::typeInt:
+            return runSingleFileForType<int>();
+        case Parameters::DataTypes::typeFloat:
+            return runSingleFileForType<float>();
+        case Parameters::DataTypes::typeDouble:
+            return runSingleFileForType<double>();
+        case Parameters::DataTypes::typeChar:
+            return runSingleFileForType<char>();
+        case Parameters::DataTypes::typeString:
+            return runSingleFileForType<std::string>();
+        case Parameters::DataTypes::tyleUnsignedInt:
+            return runSingleFileForType<unsigned int>();
+        case Parameters::DataTypes::typeUnsignedLong:
+            return runSingleFileForType<unsigned long>();
+        case Parameters::DataTypes::typeUnsignedChar:
+            return runSingleFileForType<unsigned char>();
+        default:
+            std::cerr << "ERROR: unsupported data type.\n";
+            return 1;
+        }
+    }
+
+    int runValidatedMode()
     {
         std::cout << "Library version: " << Parameters::getVersion() << "\n";
         std::cout << "Parameters are valid for the current project scope.\n";
 
+        // Po walidacji trybu mozna przejsc do wlasciwej sciezki wykonania.
         if (Parameters::runMode == Parameters::RunModes::singleFile)
         {
-            std::cout << "singleFile mode selected. File IO and sorting are not implemented yet.\n";
+            return runSingleFile();
         }
-        else if (Parameters::runMode == Parameters::RunModes::benchmark)
+
+        if (Parameters::runMode == Parameters::RunModes::benchmark)
         {
             std::cout << "benchmark mode selected. Data generation and CSV results are not implemented yet.\n";
+            return 0;
         }
+
+        std::cerr << "ERROR: unsupported run mode.\n";
+        return 1;
     }
 }
 
@@ -244,7 +347,5 @@ int main(int argc, char **argv)
         return validationResult;
     }
 
-    // Tu pozniej zostanie podlaczony wlasciwy runner dla singleFile albo benchmark.
-    printValidatedModeMessage();
-    return 0;
+    return runValidatedMode();
 }
