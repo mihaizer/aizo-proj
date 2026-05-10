@@ -1,69 +1,9 @@
-# Скомпилированные файлы
-build/
-bin/
-*.o
-*.so
-*.dylib
-
-# Мусор ОС и IDE
-.DS_Store
-.vscode/
-.idea/
-cmake-build-debug/
-
-# If you are not sure what files you should ignore when using specific IDE, programming language, tool or even game engine, just check this repository.
-# https://github.com/github/gitignore
-# There is even a .gitignore for WordPress!
-
-#
-# Here, I just copy-pasted "C++.gitignore".
-#
-
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-*.so.*
-
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
-
 # Build directories
 build/
 Build/
 build-*/
+bin/
+cmake-build-debug/
 
 # CMake generated files
 CMakeFiles/
@@ -73,21 +13,49 @@ Makefile
 install_manifest.txt
 compile_commands.json
 
-# Temporary files
+# Compiled files and libraries
+*.d
+*.dwo
+*.gch
+*.pch
+*.slo
+*.lo
+*.o
+*.obj
+*.ilk
+*.pdb
+*.so
+*.so.*
+*.dylib
+*.dll
+*.lai
+*.la
+*.a
+*.lib
+*.exe
+*.out
+*.app
+
+# Local editor and OS files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Temporary files and test output
 *.tmp
 *.log
 *.bak
-*.swp
+Testing/
+.cache/
+results.csv
+
+# Local dependency checkouts
+for-students-master/
+
+docs/PLAN.md
+docs/assignment/session_decisions_2026-05-09.md
 
 # vcpkg
 vcpkg_installed/
-
-# debug information files
-*.dwo
-
-# test output & cache
-Testing/
-.cache/
-
-#prowadzacy repo
-for-students-master
+docs/assignment/requirements.md
