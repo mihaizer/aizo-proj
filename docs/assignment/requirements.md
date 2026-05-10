@@ -10,6 +10,10 @@ CONVENTION - TEMPLATE FILE LAYOUT:
 Это проектное соглашение, которого надо придерживаться везде, где появляются шаблоны, чтобы структура кода была предсказуемой и следующий агент сразу понимал, где искать интерфейс, а где реализацию.
 Пример: `include/List.h` содержит объявления, а `include/List.tpp` содержит определения методов и шаблонных функций; в конце `List.h` должен быть `#include "List.tpp"`.
 
+CONVENTION - KOMENTARZE W PLIKACH `.h`:
+Komentarze w plikach naglowkowych `.h` maja byc po polsku. Przy waznych deklaracjach nalezy pisac krotki komentarz w tej samej linii: najpierw pokazac jednoliniowy przyklad uzycia w kodzie, a potem krotko wyjasnic co ta linia robi. Przy metodach z `override` komentarz powinien tez mowic, ktora metode z interfejsu dana deklaracja nadpisuje.
+Przyklad: `void pushBack(const T &value) override; // arr.pushBack(7); nadpisuje IStructure<T>::pushBack() i dodaje element na koniec.`
+
 Флаги -Wall -Wextra -Werror с первой строчки кода.
 Пункт 6 гласит, что любое предупреждение компилятора — это ошибка (благодаря -Werror), и код просто не соберется. Настрой CMake сразу с этими флагами и фикси ворнинги по мере написания. Оставишь на потом — получишь стену из сотен ошибок за день до дедлайна.
 
