@@ -17,6 +17,31 @@ BADANIE_A_LAST_TASK = 24
 BADANIE_B_LAST_TASK = 32
 
 
+ALGORITHM_LABELS = {
+    "cocktail": "CocktailSort",
+    "merge": "MergeSort",
+    "insertion": "InsertionSort",
+}
+
+STRUCTURE_LABELS = {
+    "array": "DynamicArray",
+    "singleList": "SinglyLinkedList",
+}
+
+DISTRIBUTION_LABELS = {
+    "random": "random",
+    "ascending": "ascending",
+    "ascending50Per": "ascending50Per",
+    "descending": "descending",
+}
+
+DATA_TYPE_LABELS = {
+    "int": "int",
+    "float": "float",
+    "unsigned_int": "unsigned int",
+}
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Analyze benchmark CSV results, split them into task blocks, and generate report artifacts."
@@ -199,10 +224,10 @@ def create_badanie_a_plot(records, structure, output_path):
             linewidth=2,
             markersize=7,
             color=colors[algorithm],
-            label=algorithm,
+            label=ALGORITHM_LABELS[algorithm],
         )
 
-    ax.set_title(f"Badanie A - {structure}")
+    ax.set_title(f"Badanie A - {STRUCTURE_LABELS[structure]}")
     ax.set_xlabel("rozmiar [liczba elementow]")
     ax.set_ylabel("sredni czas [us]")
     ax.set_xticks(ordered_sizes)
@@ -225,15 +250,18 @@ def create_badanie_b_plot(records, structure, output_path):
         values.append(match["avg_us"])
 
     fig, ax = plt.subplots(figsize=(9, 5))
+    positions = list(range(len(distribution_order)))
     bars = ax.bar(
-        distribution_order,
+        positions,
         values,
         color=["#2563eb", "#16a34a", "#d97706", "#dc2626"],
         edgecolor="#1f2937",
     )
-    ax.set_title(f"Badanie B - merge / {structure}")
+    ax.set_title(f"Badanie B - MergeSort / {STRUCTURE_LABELS[structure]}")
     ax.set_xlabel("rozklad danych")
     ax.set_ylabel("sredni czas [us]")
+    ax.set_xticks(positions)
+    ax.set_xticklabels([DISTRIBUTION_LABELS[item] for item in distribution_order])
     ax.grid(axis="y", linestyle="--", linewidth=0.6, alpha=0.5)
     for bar, value in zip(bars, values):
         ax.text(bar.get_x() + bar.get_width() / 2, value, f"{value:.2f}", ha="center", va="bottom", fontsize=8)
@@ -250,15 +278,18 @@ def create_badanie_c_plot(records, output_path):
         values.append(match["avg_us"])
 
     fig, ax = plt.subplots(figsize=(8, 5))
+    positions = list(range(len(type_order)))
     bars = ax.bar(
-        type_order,
+        positions,
         values,
         color=["#0f766e", "#7c3aed", "#b91c1c"],
         edgecolor="#1f2937",
     )
-    ax.set_title("Badanie C - merge / array / 25000")
+    ax.set_title("Badanie C - MergeSort / DynamicArray / 25000")
     ax.set_xlabel("typ danych")
     ax.set_ylabel("sredni czas [us]")
+    ax.set_xticks(positions)
+    ax.set_xticklabels([DATA_TYPE_LABELS[item] for item in type_order])
     ax.grid(axis="y", linestyle="--", linewidth=0.6, alpha=0.5)
     for bar, value in zip(bars, values):
         ax.text(bar.get_x() + bar.get_width() / 2, value, f"{value:.2f}", ha="center", va="bottom", fontsize=8)
