@@ -3,27 +3,27 @@
 #include "IStructure.h"
 
 template <typename T>
-class SinglyLinkedList;
+class SinglyLinkedList; // Zapis wczesniejszy: mowi kompilatorowi, ze taka klasa istnieje, zanim damy pelna definicje.
 
 template <typename T>
-bool isSortedAscending(const SinglyLinkedList<T> &values);
+bool isSortedAscending(const SinglyLinkedList<T> &values); // Deklaracja pomocniczej wersji sprawdzania sortowania dla listy.
 
 namespace CocktailSort
 {
 template <typename T>
-struct SinglyLinkedListAccess;
+struct SinglyLinkedListAccess; // Pomocnik CocktailSort, ktory dostaje dostep do prywatnych pol listy.
 }
 
 namespace InsertionSort
 {
 template <typename T>
-struct SinglyLinkedListAccess;
+struct SinglyLinkedListAccess; // Pomocnik InsertionSort, ktory moze przepinac wezly bez publicznego API.
 }
 
 namespace MergeSort
 {
 template <typename T>
-struct SinglyLinkedListAccess;
+struct SinglyLinkedListAccess; // Pomocnik MergeSort, ktory sortuje liste przez bezposrednie operacje na wezlach.
 }
 
 template <typename T> // SinglyLinkedList<int> list; tutaj T oznacza typ przechowywanej wartosci.
