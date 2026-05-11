@@ -1,3 +1,6 @@
+#include <chrono>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <random>
 #include <string>
@@ -14,6 +17,106 @@
 
 namespace
 {
+    // Pomocnicze funkcje do zamiany enumow na tekst w raporcie CSV.
+    const char *algorithmToString(Parameters::Algorithms algorithm)
+    {
+        switch (algorithm)
+        {
+        case Parameters::Algorithms::cocktail:
+            return "cocktail";
+        case Parameters::Algorithms::merge:
+            return "merge";
+        case Parameters::Algorithms::insertion:
+            return "insertion";
+        case Parameters::Algorithms::bubble:
+            return "bubble";
+        case Parameters::Algorithms::bucket:
+            return "bucket";
+        case Parameters::Algorithms::quick:
+            return "quick";
+        case Parameters::Algorithms::shell:
+            return "shell";
+        default:
+            return "unknown";
+        }
+    }
+
+    const char *structureToString(Parameters::Structures structure)
+    {
+        switch (structure)
+        {
+        case Parameters::Structures::array:
+            return "array";
+        case Parameters::Structures::singleList:
+            return "singleList";
+        case Parameters::Structures::doubleList:
+            return "doubleList";
+        case Parameters::Structures::queue:
+            return "queue";
+        case Parameters::Structures::stack:
+            return "stack";
+        case Parameters::Structures::binaryTree:
+            return "binaryTree";
+        default:
+            return "unknown";
+        }
+    }
+
+    const char *dataTypeToString(Parameters::DataTypes dataType)
+    {
+        switch (dataType)
+        {
+        case Parameters::DataTypes::typeInt:
+            return "int";
+        case Parameters::DataTypes::typeFloat:
+            return "float";
+        case Parameters::DataTypes::typeDouble:
+            return "double";
+        case Parameters::DataTypes::typeChar:
+            return "char";
+        case Parameters::DataTypes::typeString:
+            return "string";
+        case Parameters::DataTypes::tyleUnsignedInt:
+            return "unsigned_int";
+        case Parameters::DataTypes::typeUnsignedLong:
+            return "unsigned_long";
+        case Parameters::DataTypes::typeUnsignedChar:
+            return "unsigned_char";
+        default:
+            return "unknown";
+        }
+    }
+
+    const char *distributionToString(Parameters::Distribution distribution)
+    {
+        switch (distribution)
+        {
+        case Parameters::Distribution::random:
+            return "random";
+        case Parameters::Distribution::ascending:
+            return "ascending";
+        case Parameters::Distribution::ascending50Per:
+            return "ascending50Per";
+        case Parameters::Distribution::descending:
+            return "descending";
+        default:
+            return "unknown";
+        }
+    }
+
+    std::string getCurrentTimestamp()
+    {
+        auto now = std::chrono::system_clock::now();
+        std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+        std::tm *now_tm = std::localtime(&now_time);
+        char buffer[100];
+        if (std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", now_tm))
+        {
+            return std::string(buffer);
+        }
+        return "unknown-time";
+    }
+
     // Program obsluguje wybrany zakres projektu: sortowanie koktajlowe, przez scalanie i przez wstawianie;
     // tablice oraz listy jednokierunkowe. Typ danych przyjmujemy zgodnie z lista z Parameters::help().
     bool isSupportedAlgorithm(Parameters::Algorithms algorithm)
@@ -432,8 +535,16 @@ namespace
 
     int runBenchmark()
     {
-        // Staly seed ulatwia powtorzenie tego samego testu podczas sprawdzania generatora.
-        std::mt19937 rng(123456789U);
+        // Seed laczy zrodlo systemowe i czas, zeby kolejne uruchomienia benchmarku mialy inne dane.
+        std::random_device randomDevice;
+        unsigned long long now = static_cast<unsigned long long>(
+            std::chrono::high_resolution_clock::now().time_since_epoch().count());
+        std::seed_seq seed{
+            static_cast<unsigned int>(randomDevice()),
+            static_cast<unsigned int>(randomDevice()),
+            static_cast<unsigned int>(now),
+            static_cast<unsigned int>(now >> 32)};
+        std::mt19937 rng(seed);
 
         switch (Parameters::dataType)
         {

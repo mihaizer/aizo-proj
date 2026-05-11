@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <string>
@@ -9,19 +10,6 @@ namespace DataGenerator
 {
 namespace Detail
 {
-    inline std::string makeOrderedString(int rank)
-    {
-        std::string number = std::to_string(rank);
-        const int width = 10;
-
-        if (static_cast<int>(number.size()) >= width)
-        {
-            return number;
-        }
-
-        return std::string(width - static_cast<int>(number.size()), '0') + number;
-    }
-
     inline std::string makeRandomString(std::mt19937 &rng)
     {
         std::uniform_int_distribution<int> lengthDistribution(4, 12);
@@ -36,43 +24,6 @@ namespace Detail
         }
 
         return value;
-    }
-
-    template <typename T>
-    T makeOrderedValue(int rank, int size)
-    {
-        if constexpr (std::is_same<T, std::string>::value)
-        {
-            return makeOrderedString(rank);
-        }
-        else
-        {
-            long double minValue = 0.0L;
-            long double maxValue = static_cast<long double>(std::numeric_limits<T>::max());
-
-            if constexpr (std::is_signed<T>::value)
-            {
-                minValue = static_cast<long double>(std::numeric_limits<T>::lowest());
-            }
-
-            long double ratio = 0.0L;
-            if (size > 1)
-            {
-                ratio = static_cast<long double>(rank) / static_cast<long double>(size - 1);
-            }
-
-            long double value = minValue + (maxValue - minValue) * ratio;
-            if (value < minValue)
-            {
-                value = minValue;
-            }
-            if (value > maxValue)
-            {
-                value = maxValue;
-            }
-
-            return static_cast<T>(value);
-        }
     }
 
     template <typename T>
@@ -120,49 +71,79 @@ namespace Detail
     }
 
     template <typename T>
-    T makeValue(int index, int size, Parameters::Distribution distribution, std::mt19937 &rng)
+    void fillRandomBuffer(T *buffer, int size, std::mt19937 &rng)
+    {
+        for (int index = 0; index < size; index++)
+        {
+            buffer[index] = makeRandomValue<T>(rng);
+        }
+    }
+
+    template <typename T>
+    void prepareDistribution(T *buffer, int size, Parameters::Distribution distribution)
     {
         switch (distribution)
         {
         case Parameters::Distribution::random:
-            return makeRandomValue<T>(rng);
+            return;
         case Parameters::Distribution::ascending:
-            return makeOrderedValue<T>(index, size);
+            std::sort(buffer, buffer + size);
+            return;
         case Parameters::Distribution::ascending50Per:
-            // Pierwsza polowa danych jest juz posortowana, a druga polowa zostaje losowa.
-            if (index < size / 2)
-            {
-                return makeOrderedValue<T>(index, size);
-            }
-            return makeRandomValue<T>(rng);
+            // Najpierw powstaje caly losowy zestaw, a potem sortujemy tylko pierwsza polowe danych.
+            std::sort(buffer, buffer + (size + 1) / 2);
+            return;
         case Parameters::Distribution::descending:
-            return makeOrderedValue<T>(size - index - 1, size);
+            std::sort(buffer, buffer + size, [](const T &left, const T &right) {
+                return right < left;
+            });
+            return;
         case Parameters::Distribution::undefined:
         case Parameters::Distribution::count:
-            return T{};
+            return;
         }
-
-        return T{};
     }
 }
 
 template <typename T>
 void fill(DynamicArray<T> &values, int size, Parameters::Distribution distribution, std::mt19937 &rng)
 {
-    // Tablica jest tworzona od razu z rozmiarem size, dlatego tutaj tylko wpisujemy wartosci pod indeksy.
+    if (size <= 0)
+    {
+        return;
+    }
+
+    T *buffer = new T[size];
+    Detail::fillRandomBuffer(buffer, size, rng);
+    Detail::prepareDistribution(buffer, size, distribution);
+
+    // Tablica jest tworzona od razu z rozmiarem size, dlatego tutaj tylko przepisujemy gotowe dane.
     for (int index = 0; index < size; index++)
     {
-        values[index] = Detail::makeValue<T>(index, size, distribution, rng);
+        values[index] = buffer[index];
     }
+
+    delete[] buffer;
 }
 
 template <typename T>
 void fill(SinglyLinkedList<T> &values, int size, Parameters::Distribution distribution, std::mt19937 &rng)
 {
-    // Lista nie ma losowego dostepu do pamieci, wiec generator buduje ja kolejnymi pushBack.
+    if (size <= 0)
+    {
+        return;
+    }
+
+    T *buffer = new T[size];
+    Detail::fillRandomBuffer(buffer, size, rng);
+    Detail::prepareDistribution(buffer, size, distribution);
+
+    // Lista nie ma losowego dostepu do pamieci, wiec gotowe dane dopisujemy kolejnymi pushBack.
     for (int index = 0; index < size; index++)
     {
-        values.pushBack(Detail::makeValue<T>(index, size, distribution, rng));
+        values.pushBack(buffer[index]);
     }
+
+    delete[] buffer;
 }
 }
