@@ -473,37 +473,124 @@ namespace
         }
     }
 
-    template <typename T>
-    int generateBenchmarkArray(std::mt19937 &rng)
+    template <typename T, typename Structure>
+    int runBenchmarkSort(Structure &values)
     {
-        for (int iteration = 0; iteration < Parameters::iterations; iteration++)
+        // Wybieramy algorytm do pomiaru.
+        switch (Parameters::algorithm)
         {
-            DynamicArray<T> values(Parameters::structureSize);
-            DataGenerator::fill(values, Parameters::structureSize, Parameters::distribution, rng);
-
-            if (values.size() != Parameters::structureSize)
-            {
-                std::cerr << "ERROR: benchmark generator created array with invalid size.\n";
-                return 1;
-            }
+        case Parameters::Algorithms::cocktail:
+            CocktailSort::sort(values);
+            return 0;
+        case Parameters::Algorithms::merge:
+            MergeSort::sort(values);
+            return 0;
+        case Parameters::Algorithms::insertion:
+            InsertionSort::sort(values);
+            return 0;
+        default:
+            return 1;
         }
+    }
+
+    int writeBenchmarkCsv(const std::string &path, long long min_us, long long max_us, double avg_us)
+    {
+        bool fileExists = false;
+        {
+            std::ifstream test(path);
+            fileExists = test.good();
+        }
+
+        std::ofstream file(path, std::ios::app);
+        if (!file.is_open())
+        {
+            std::cerr << "ERROR: could not open results file " << path << " for writing.\n";
+            return 1;
+        }
+
+        // Naglowek dodajemy tylko, jesli plik jest tworzony od zera.
+        if (!fileExists)
+        {
+            file << "timestamp,algorithm,structure,data_type,distribution,size,iterations,min_us,avg_us,max_us,status\n";
+        }
+
+        file << getCurrentTimestamp() << ",";
+        file << algorithmToString(Parameters::algorithm) << ",";
+        file << structureToString(Parameters::structure) << ",";
+        file << dataTypeToString(Parameters::dataType) << ",";
+        file << distributionToString(Parameters::distribution) << ",";
+        file << Parameters::structureSize << ",";
+        file << Parameters::iterations << ",";
+        file << min_us << ",";
+        file << std::fixed << std::setprecision(2) << avg_us << ",";
+        file << max_us << ",";
+        file << "OK\n";
 
         return 0;
     }
 
-    template <typename T>
-    int generateBenchmarkList(std::mt19937 &rng)
+    template <typename T, typename Structure>
+    int executeBenchmarkLoop(std::mt19937 &rng)
     {
+        // Przechowujemy czasy kazdej iteracji w naszej wlasnej tablicy dynamicznej.
+        DynamicArray<long long> durations;
+        long long total_us = 0;
+
         for (int iteration = 0; iteration < Parameters::iterations; iteration++)
         {
-            SinglyLinkedList<T> values;
+            Structure values;
+            // Dla tablicy rezerwujemy miejsce od razu, zeby uniknac realokacji w trakcie generowania.
+            if constexpr (std::is_same_v<Structure, DynamicArray<T>>)
+            {
+                values = DynamicArray<T>(Parameters::structureSize);
+            }
+
             DataGenerator::fill(values, Parameters::structureSize, Parameters::distribution, rng);
 
+            // Przywracam weryfikacje rozmiaru po generowaniu danych.
             if (values.size() != Parameters::structureSize)
             {
-                std::cerr << "ERROR: benchmark generator created list with invalid size.\n";
+                std::cerr << "ERROR: benchmark generator created structure with invalid size.\n";
                 return 1;
             }
+
+            auto start = std::chrono::steady_clock::now();
+            if (runBenchmarkSort<T, Structure>(values) != 0)
+            {
+                std::cerr << "ERROR: sorting failed during benchmark iteration " << iteration << ".\n";
+                return 1;
+            }
+            auto end = std::chrono::steady_clock::now();
+
+            // Weryfikacja nie jest mierzona, ale chroni przed blednymi wynikami w raporcie.
+            if (!isSortedAscending(values))
+            {
+                std::cerr << "ERROR: sorting verification failed during benchmark iteration " << iteration << ".\n";
+                return 1;
+            }
+
+            long long duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+            durations.pushBack(duration);
+            total_us += duration;
+        }
+
+        long long min_us = durations[0];
+        long long max_us = durations[0];
+        for (int i = 0; i < durations.size(); i++)
+        {
+            if (durations[i] < min_us) min_us = durations[i];
+            if (durations[i] > max_us) max_us = durations[i];
+        }
+        double avg_us = static_cast<double>(total_us) / Parameters::iterations;
+
+        std::cout << "Benchmark results (" << Parameters::iterations << " iterations):\n";
+        std::cout << "  min: " << min_us << " us\n";
+        std::cout << "  avg: " << std::fixed << std::setprecision(2) << avg_us << " us\n";
+        std::cout << "  max: " << max_us << " us\n";
+
+        if (!Parameters::resultsFile.empty())
+        {
+            return writeBenchmarkCsv(Parameters::resultsFile, min_us, max_us, avg_us);
         }
 
         return 0;
@@ -516,21 +603,13 @@ namespace
         switch (Parameters::structure)
         {
         case Parameters::Structures::array:
-            return generateBenchmarkArray<T>(rng);
+            return executeBenchmarkLoop<T, DynamicArray<T>>(rng);
         case Parameters::Structures::singleList:
-            return generateBenchmarkList<T>(rng);
-        case Parameters::Structures::doubleList:
-        case Parameters::Structures::queue:
-        case Parameters::Structures::stack:
-        case Parameters::Structures::binaryTree:
-        case Parameters::Structures::undefined:
-        case Parameters::Structures::count:
+            return executeBenchmarkLoop<T, SinglyLinkedList<T>>(rng);
+        default:
             std::cerr << "ERROR: unsupported structure.\n";
             return 1;
         }
-
-        std::cerr << "ERROR: unsupported structure.\n";
-        return 1;
     }
 
     int runBenchmark()
@@ -583,15 +662,7 @@ namespace
 
         if (Parameters::runMode == Parameters::RunModes::benchmark)
         {
-            int benchmarkResult = runBenchmark();
-            if (benchmarkResult != 0)
-            {
-                return benchmarkResult;
-            }
-
-            std::cout << "Benchmark data generated for " << Parameters::iterations << " iteration(s).\n";
-            std::cout << "Timing and CSV results are not implemented yet.\n";
-            return 0;
+            return runBenchmark();
         }
 
         std::cerr << "ERROR: unsupported run mode.\n";
