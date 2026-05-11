@@ -107,10 +107,10 @@ void writeValue(std::ostream &output, const T &value)
 }
 }
 
-template <typename T>
-bool readValues(const std::string &path, DynamicArray<T> &values, std::string &error)
+template <typename T, typename Structure>
+bool readValues(const std::string &path, Structure &values, std::string &error)
 {
-    // Odczytujemy caly plik do tymczasowej tablicy. Dopiero poprawny odczyt podmienia wynik.
+    // Odczytujemy caly plik do tymczasowej struktury. Dopiero poprawny odczyt podmienia wynik.
     std::ifstream input(path);
     if (!input.is_open())
     {
@@ -127,18 +127,20 @@ bool readValues(const std::string &path, DynamicArray<T> &values, std::string &e
         return false;
     }
 
-    // DynamicArray ma juz ustalony rozmiar, wiec wartosci wpisujemy bez pushBack.
-    DynamicArray<T> loaded(count);
+    // Dane dodajemy przez pushBack, wiec ta funkcja nie zalezy od konkretnej implementacji struktury.
+    Structure loaded;
     for (int i = 0; i < count; i++)
     {
-        if (!Detail::readValue(input, loaded[i]))
+        T value;
+        if (!Detail::readValue(input, value))
         {
             error = "Input file ended early or contains an invalid value.";
             return false;
         }
+        loaded.pushBack(value);
     }
 
-    // Przypisanie korzysta z operatora DynamicArray, wiec dziala rowniez dla std::string.
+    // Przypisanie wykonujemy dopiero po pelnym sukcesie, aby nie zostawic czesciowo wczytanych danych.
     values = loaded;
     error.clear();
     return true;

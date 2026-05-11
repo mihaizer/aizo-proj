@@ -230,7 +230,7 @@ namespace
         // pierwsza liczba oznacza rozmiar, kolejne tokeny to elementy struktury.
         DynamicArray<T> values;
         std::string error;
-        if (!DataFile::readValues(Parameters::inputFile, values, error))
+        if (!DataFile::readValues<T>(Parameters::inputFile, values, error))
         {
             std::cerr << "ERROR: " << error << "\n";
             return 1;
