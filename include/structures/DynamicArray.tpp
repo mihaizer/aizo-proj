@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstring>
 #include <iostream>
 #include <stdexcept>
 
@@ -29,7 +28,10 @@ DynamicArray<T>::DynamicArray(const DynamicArray &other)
     currentSize = other.currentSize;
     capacity = other.capacity;
     data = new T[capacity];
-    std::memcpy(data, other.data, currentSize * sizeof(T));
+    for (int i = 0; i < currentSize; i++)
+    {
+        data[i] = other.data[i];
+    }
 }
 
 template <typename T>
@@ -45,7 +47,10 @@ DynamicArray<T> &DynamicArray<T>::operator=(const DynamicArray &other)
     currentSize = other.currentSize;
     capacity = other.capacity;
     data = new T[capacity];
-    std::memcpy(data, other.data, currentSize * sizeof(T));
+    for (int i = 0; i < currentSize; i++)
+    {
+        data[i] = other.data[i];
+    }
 
     return *this;
 }
@@ -86,7 +91,10 @@ void DynamicArray<T>::pushBack(const T &value)
         int newCapacity = capacity + 1;
         T *newData = new T[newCapacity];
 
-        std::memcpy(newData, data, currentSize * sizeof(T));
+        for (int i = 0; i < currentSize; i++)
+        {
+            newData[i] = data[i];
+        }
 
         delete[] data;
         data = newData;
