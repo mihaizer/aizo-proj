@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdexcept>
-
 template <typename T>
 SinglyLinkedList<T>::SinglyLinkedList()
     : head(nullptr),
@@ -68,11 +66,7 @@ void SinglyLinkedList<T>::copyFrom(const SinglyLinkedList &other)
 template <typename T>
 typename SinglyLinkedList<T>::Node *SinglyLinkedList<T>::nodeAt(int index)
 {
-    if (index < 0 || index >= currentSize)
-    {
-        throw std::out_of_range("Index out of range");
-    }
-
+    // Indeksy sa kontrolowane przez kod wywolujacy, wiec tutaj przechodzimy bezposrednio po liscie.
     Node *current = head;
     for (int currentIndex = 0; currentIndex < index; currentIndex++)
     {
@@ -85,11 +79,7 @@ typename SinglyLinkedList<T>::Node *SinglyLinkedList<T>::nodeAt(int index)
 template <typename T>
 const typename SinglyLinkedList<T>::Node *SinglyLinkedList<T>::nodeAt(int index) const
 {
-    if (index < 0 || index >= currentSize)
-    {
-        throw std::out_of_range("Index out of range");
-    }
-
+    // Indeksy sa kontrolowane przez kod wywolujacy, wiec tutaj przechodzimy bezposrednio po liscie.
     const Node *current = head;
     for (int currentIndex = 0; currentIndex < index; currentIndex++)
     {

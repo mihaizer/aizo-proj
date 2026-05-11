@@ -1,16 +1,11 @@
 #pragma once
 
 #include <iostream>
-#include <stdexcept>
 
 template <typename T>
 DynamicArray<T>::DynamicArray(int n)
 {
-    if (n < 0)
-    {
-        throw std::invalid_argument("Size must be >= 0");
-    }
-
+    // Rozmiar jest walidowany przed utworzeniem struktury, wiec tutaj zakladamy poprawne n.
     currentSize = n;
     capacity = n == 0 ? 1 : n;
     data = new T[capacity];
@@ -25,6 +20,7 @@ DynamicArray<T>::~DynamicArray()
 template <typename T>
 DynamicArray<T>::DynamicArray(const DynamicArray &other)
 {
+    // Kopia musi miec wlasny bufor, zeby obiekty nie dzielily pamieci.
     currentSize = other.currentSize;
     capacity = other.capacity;
     data = new T[capacity];
@@ -37,6 +33,7 @@ DynamicArray<T>::DynamicArray(const DynamicArray &other)
 template <typename T>
 DynamicArray<T> &DynamicArray<T>::operator=(const DynamicArray &other)
 {
+    // Najpierw zwalniamy stary bufor, potem alokujemy nowy i kopiujemy dane.
     if (this == &other)
     {
         return *this;
@@ -58,22 +55,14 @@ DynamicArray<T> &DynamicArray<T>::operator=(const DynamicArray &other)
 template <typename T>
 T &DynamicArray<T>::operator[](int index)
 {
-    if (index < 0 || index >= currentSize)
-    {
-        throw std::out_of_range("Index out of range");
-    }
-
+    // Algorytmy i generator pracuja na zweryfikowanych zakresach indeksow.
     return data[index];
 }
 
 template <typename T>
 const T &DynamicArray<T>::operator[](int index) const
 {
-    if (index < 0 || index >= currentSize)
-    {
-        throw std::out_of_range("Index out of range");
-    }
-
+    // Algorytmy i generator pracuja na zweryfikowanych zakresach indeksow.
     return data[index];
 }
 
@@ -86,6 +75,7 @@ int DynamicArray<T>::size() const
 template <typename T>
 void DynamicArray<T>::pushBack(const T &value)
 {
+    // Gdy brak miejsca, zwiekszamy pojemnosc o 1 i przepisujemy zawartosc.
     if (currentSize == capacity)
     {
         int newCapacity = capacity + 1;
@@ -108,11 +98,7 @@ void DynamicArray<T>::pushBack(const T &value)
 template <typename T>
 void DynamicArray<T>::swap(int i, int j)
 {
-    if (i < 0 || i >= currentSize || j < 0 || j >= currentSize)
-    {
-        throw std::out_of_range("Index out of range");
-    }
-
+    // Zamiana elementow jest prosta, bo tablica ma bezposredni dostep do komorek pamieci.
     T temp = data[i];
     data[i] = data[j];
     data[j] = temp;

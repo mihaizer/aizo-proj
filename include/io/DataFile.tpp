@@ -127,7 +127,7 @@ bool readValues(const std::string &path, Structure &values, std::string &error)
         return false;
     }
 
-    // Dane dodajemy przez pushBack, wiec ta funkcja nie zalezy od konkretnej implementacji struktury.
+    // Dane dodajemy przez pushBack, wiec funkcja dziala dla tablicy i listy.
     Structure loaded;
     for (int i = 0; i < count; i++)
     {
@@ -157,6 +157,7 @@ bool writeValues(const std::string &path, const IStructure<T> &values, std::stri
         return false;
     }
 
+    // Zapis rozpoczynamy od liczby elementow, potem lecimy wartosc po wartosci.
     output << values.size() << '\n';
     for (int i = 0; i < values.size(); i++)
     {

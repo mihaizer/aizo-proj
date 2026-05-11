@@ -12,6 +12,7 @@ namespace Detail
 {
     inline std::string makeRandomString(std::mt19937 &rng)
     {
+        // Generujemy tekst o losowej dlugosci i z drukowalnych znakow ASCII.
         std::uniform_int_distribution<int> lengthDistribution(4, 12);
         std::uniform_int_distribution<int> charDistribution(32, 126);
 
@@ -29,6 +30,7 @@ namespace Detail
     template <typename T>
     T makeRandomFloatingValue(std::mt19937 &rng)
     {
+        // Dla typow zmiennoprzecinkowych wybieramy losowy znak, wykladnik i ulamkowa czesc.
         std::uniform_int_distribution<int> signDistribution(0, 1);
         std::uniform_int_distribution<int> exponentDistribution(std::numeric_limits<T>::min_exponent,
                                                                 std::numeric_limits<T>::max_exponent - 1);
@@ -46,6 +48,7 @@ namespace Detail
     template <typename T>
     T makeRandomValue(std::mt19937 &rng)
     {
+        // Jeden punkt wejscia dla wszystkich obslugiwanych typow danych.
         if constexpr (std::is_same<T, std::string>::value)
         {
             return makeRandomString(rng);
@@ -73,6 +76,7 @@ namespace Detail
     template <typename T>
     void fillRandomBuffer(T *buffer, int size, std::mt19937 &rng)
     {
+        // Najpierw wypelniamy surowy bufor, a dopiero potem ustawiamy rozklad.
         for (int index = 0; index < size; index++)
         {
             buffer[index] = makeRandomValue<T>(rng);
@@ -82,6 +86,7 @@ namespace Detail
     template <typename T>
     void prepareDistribution(T *buffer, int size, Parameters::Distribution distribution)
     {
+        // Rozklad uzyskujemy przez dodatkowe sortowanie gotowego bufora.
         switch (distribution)
         {
         case Parameters::Distribution::random:

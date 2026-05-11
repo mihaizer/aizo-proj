@@ -106,6 +106,7 @@ namespace
 
     std::string getCurrentTimestamp()
     {
+        // Tworzymy jeden czytelny znacznik czasu dla wszystkich wierszy danego testu.
         auto now = std::chrono::system_clock::now();
         std::time_t now_time = std::chrono::system_clock::to_time_t(now);
         std::tm *now_tm = std::localtime(&now_time);
@@ -186,6 +187,7 @@ namespace
         std::cout << "  data types: 0 - int, 1 - float, 2 - double, 3 - char, 4 - std::string\n";
         std::cout << "              5 - unsigned int, 6 - unsigned long, 7 - unsigned char\n";
         std::cout << "  benchmark distributions: 0 - random, 1 - ascending, 2 - ascending 50%, 3 - descending\n";
+        std::cout << "  benchmark requires: --distribution, --structureSize, --iterations, --resultsFile\n";
     }
 
     int failMissing(const char *parameterName)
@@ -318,6 +320,11 @@ namespace
         if (Parameters::iterations <= 0)
         {
             return failPositiveRequired("--iterations");
+        }
+
+        if (Parameters::resultsFile.empty())
+        {
+            return failMissing("--resultsFile");
         }
 
         return 0;
@@ -495,6 +502,7 @@ namespace
 
     int writeBenchmarkCsv(const std::string &path, const DynamicArray<long long> &durations, long long min_us, long long max_us, double avg_us)
     {
+        // CSV trzyma jeden blok wynikow na jedno uruchomienie testu.
         constexpr const char *csvHeader =
             "timestamp,algorithm,structure,data_type,distribution,size,iterations,iteration_id,duration_us,min_us,avg_us,max_us,status";
         bool fileExists = false;
@@ -563,6 +571,7 @@ namespace
     template <typename T, typename Structure>
     int executeBenchmarkLoop(std::mt19937 &rng)
     {
+        // Każda iteracja dostaje nowe dane, zeby pomiar nie byl zanieczyszczony poprzednim przebiegiem.
         // Przechowujemy czasy kazdej iteracji w naszej wlasnej tablicy dynamicznej.
         DynamicArray<long long> durations;
         long long total_us = 0;
