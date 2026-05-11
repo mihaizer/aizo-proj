@@ -2,6 +2,12 @@
 
 #include "IStructure.h"
 
+namespace MergeSort
+{
+template <typename T>
+struct SinglyLinkedListAccess;
+}
+
 template <typename T> // SinglyLinkedList<int> list; tutaj T oznacza typ przechowywanej wartosci.
 class SinglyLinkedList : public IStructure<T> // Implementuje IStructure<T> jako lista jednokierunkowa.
 {
@@ -20,6 +26,8 @@ private: // Wezly i wskazniki sa szczegolem implementacji listy.
     void copyFrom(const SinglyLinkedList &other); // copyFrom(other); kopiuje elementy przez pushBack.
     Node *nodeAt(int index); // nodeAt(2); znajduje wezel pod indeksem do zapisu.
     const Node *nodeAt(int index) const; // nodeAt(2); znajduje wezel pod indeksem do odczytu const.
+
+    friend struct MergeSort::SinglyLinkedListAccess<T>; // MergeSort::sort(list); helper moze przepinac prywatne wezly listy.
 
 public: // Publiczne metody sa zgodne z interfejsem IStructure<T>.
     SinglyLinkedList(); // SinglyLinkedList<int> list; tworzy pusta liste.

@@ -4,6 +4,7 @@
 #include "Parameters.h"
 #include "algorithms/CocktailSort.h"
 #include "algorithms/InsertionSort.h"
+#include "algorithms/MergeSort.h"
 #include "io/DataFile.h"
 #include "structures/DynamicArray.h"
 #include "structures/SinglyLinkedList.h"
@@ -226,21 +227,21 @@ namespace
         return validateBenchmarkParameters();
     }
 
-    template <typename T>
-    int sortSingleFileValues(IStructure<T> &values)
+    template <typename T, typename Structure>
+    int sortSingleFileValues(Structure &values)
     {
         switch (Parameters::algorithm)
         {
         case Parameters::Algorithms::cocktail:
             CocktailSort::sort(values);
             return 0;
+        case Parameters::Algorithms::merge:
+            // Merge sort ma osobne wersje dla tablicy i listy, bo lista nie powinna byc sortowana przez values[index].
+            MergeSort::sort(values);
+            return 0;
         case Parameters::Algorithms::insertion:
             InsertionSort::sort(values);
             return 0;
-        case Parameters::Algorithms::merge:
-            std::cerr << "ERROR: selected algorithm is not connected to singleFile sorting yet.\n";
-            std::cerr << "Implemented now: 1 - Cocktail sort, 3 - Insertion sort.\n";
-            return 1;
         case Parameters::Algorithms::bubble:
         case Parameters::Algorithms::bucket:
         case Parameters::Algorithms::quick:
@@ -270,7 +271,7 @@ namespace
 
         std::cout << "Loaded " << values.size() << " values from " << Parameters::inputFile << ".\n";
 
-        if (sortSingleFileValues(values) != 0)
+        if (sortSingleFileValues<T>(values) != 0)
         {
             return 1;
         }
