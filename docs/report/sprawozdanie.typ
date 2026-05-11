@@ -251,25 +251,19 @@ Badanie C analizuje wpływ typu danych przy zachowaniu tego samego algorytmu, te
 
 = Analiza wyników
 
-W analizie wyników warto rozdzielić dwie grupy algorytmów. `CocktailSort` oraz `InsertionSort` należą tutaj do algorytmów o dominującym zachowaniu kwadratowym `O(n^2)`, natomiast `MergeSort` zachowuje złożoność `O(n log n)` [1][4][5]. Ta różnica jest widoczna we wszystkich trzech głównych badaniach, ale każde z nich pokazuje ją z innej strony.
+Wyniki dobrze pokazują różnicę między `MergeSort` a pozostałymi algorytmami. `CocktailSort` i `InsertionSort` rosną znacznie szybciej wraz z rozmiarem danych, a `MergeSort` zachowuje dużo lepsze czasy [1][4][5].
 
 == Badanie A
 
-Badanie A pokazuje przede wszystkim wpływ liczebności zbioru. Wraz ze wzrostem rozmiaru wejścia czasy `CocktailSort` i `InsertionSort` rosną znacznie szybciej niż czasy `MergeSort`. Najmocniej widać to przy `50000` elementów, gdzie `MergeSort` pozostaje wyraźnie szybszy zarówno dla `DynamicArray`, jak i dla `SinglyLinkedList`.
-
-Na poziomie implementacji taki wynik jest w pełni uzasadniony. `MergeSort` dla `DynamicArray` wykonuje podział zakresu i scalanie uporządkowanych fragmentów z użyciem jednego dodatkowego bufora, czyli tymczasowej tablicy pomocniczej. Dla `SinglyLinkedList` ten sam algorytm nie wykonuje kosztownego dostępu indeksowego, lecz dzieli listę na połowy i scala ją przez przepinanie wskaźników `next`. Dzięki temu obie wersje zachowują się zgodnie z oczekiwaną teorią [1][2][5].
-
-`CocktailSort` oraz `InsertionSort` są znacznie bardziej wrażliwe na wzrost liczby elementów. W przypadku `SinglyLinkedList` autor implementacji musiał dodatkowo uważać na koszt dostępu do elementu pod indeksem. Z tego powodu `CocktailSort` otrzymał osobną wersję wykorzystującą tablicę wskaźników do węzłów, a `InsertionSort` osobną wersję budującą uporządkowaną część listy przez wstawianie węzłów we właściwe miejsce. Bez takich zmian wykorzystanie samego `operator[]` prowadziłoby do bardzo dużego dodatkowego narzutu [2][5].
+W badaniu A najlepiej widać wpływ rozmiaru danych. Im większy zbiór, tym większa przewaga `MergeSort`. Najmocniej widać to przy `50000` elementów, gdzie `MergeSort` jest wyraźnie szybszy od `CocktailSort` i `InsertionSort` dla obu struktur.
 
 == Badanie B
 
-W badaniu B rozkład danych nie zmienia jakościowo zachowania `MergeSort`, ale wpływa na konkretne czasy wykonania. W szczególności przypadek `ascending50Per` bywa wolniejszy od `descending`, mimo że oba należą do tego samego głównego badania. Wynika to z tego, że dane `ascending50Per` nie są całkowicie uporządkowane: połowa wejścia jest posortowana, a reszta pozostaje losowa. Przy scalaniu takich fragmentów algorytm wykonuje więcej nieregularnych porównań niż w bardziej regularnym przypadku całkowicie malejącym. Wpływ mają tu również szczegóły implementacyjne i lokalność pamięci [1][5].
+W badaniu B zmiana rozkładu danych wpływa na wyniki, ale nie zmienia ogólnego obrazu. `MergeSort` pozostaje stabilny, a różnice między `random`, `ascending`, `ascending50Per` i `descending` są dużo mniejsze niż różnice widoczne wcześniej między algorytmami. W naszych wynikach `ascending50Per` wypada nieco słabiej niż `descending`, co można tłumaczyć konkretnym układem danych i szczegółami wykonania [1][5].
 
 == Badanie C
 
-Badanie C pokazuje wpływ typu danych przy stałym algorytmie, stałej strukturze i stałym rozmiarze wejścia. Dla `MergeSort` i `DynamicArray` średnie czasy dla `int`, `float` i `unsigned int` różnią się, ale te różnice są dużo mniejsze niż te, które w badaniu A wynikały ze zmiany algorytmu. Innymi słowy, przy tej konfiguracji ważniejsze jest to, że użyto `MergeSort`, niż to, czy sortowany był `int`, `float` czy `unsigned int`.
-
-Warto też zauważyć, że największy średni czas w badaniu C uzyskał `unsigned int`. Nie oznacza to jednak zmiany klasy złożoności algorytmu. Jest to raczej efekt szczegółów wykonania i konkretnego zestawu danych wylosowanych do benchmarku. Główna obserwacja pozostaje taka sama: wpływ typu danych istnieje, ale jest słabszy niż wpływ wyboru algorytmu i sposobu organizacji struktury [1][4][5].
+Badanie C pokazuje wpływ typu danych przy stałym algorytmie, strukturze i rozmiarze wejścia. Różnice między `int`, `float` i `unsigned int` są widoczne, ale nadal mniejsze niż różnice wynikające ze zmiany algorytmu w badaniu A. Oznacza to, że w tym projekcie większe znaczenie miał wybór algorytmu niż wybór jednego z badanych typów danych [1][4][5].
 
 = Wnioski
 
