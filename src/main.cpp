@@ -495,10 +495,25 @@ namespace
 
     int writeBenchmarkCsv(const std::string &path, const DynamicArray<long long> &durations, long long min_us, long long max_us, double avg_us)
     {
+        constexpr const char *csvHeader =
+            "timestamp,algorithm,structure,data_type,distribution,size,iterations,iteration_id,duration_us,min_us,avg_us,max_us,status";
         bool fileExists = false;
         {
             std::ifstream test(path);
             fileExists = test.good();
+        }
+
+        if (fileExists)
+        {
+            std::ifstream existingFile(path);
+            std::string existingHeader;
+            std::getline(existingFile, existingHeader);
+            if (existingHeader != csvHeader)
+            {
+                std::cerr << "ERROR: results file " << path
+                          << " has an incompatible CSV header. Remove it or choose a new file.\n";
+                return 1;
+            }
         }
 
         std::ofstream file(path, std::ios::app);
@@ -508,15 +523,16 @@ namespace
             return 1;
         }
 
-        // Naglowek z dodatkowymi kolumnami na dane kazdej iteracji.
+        // Kazda iteracja jest zapisywana jako osobny pomiar z pelnym zestawem parametrow.
         if (!fileExists)
         {
-            file << "timestamp,algorithm,structure,data_type,distribution,size,iterations,iteration_id,duration_us,min_us,avg_us,max_us,status\n";
+            file << csvHeader << "\n";
         }
 
         std::string timestamp = getCurrentTimestamp();
 
-        // Zapisujemy osobny wiersz dla kazdej iteracji, powtarzajac statystyki zbiorcze.
+        // W CSV przechowujemy surowy czas kazdej iteracji.
+        // Statystyki zbiorcze dopisujemy tylko w ostatnim wierszu danego badania.
         for (int i = 0; i < durations.size(); i++)
         {
             file << timestamp << ",";
@@ -528,9 +544,16 @@ namespace
             file << Parameters::iterations << ",";
             file << (i + 1) << ","; // iteration_id
             file << durations[i] << ","; // duration_us
-            file << min_us << ",";
-            file << std::fixed << std::setprecision(2) << avg_us << ",";
-            file << max_us << ",";
+            if (i == durations.size() - 1)
+            {
+                file << min_us << ",";
+                file << std::fixed << std::setprecision(2) << avg_us << ",";
+                file << max_us << ",";
+            }
+            else
+            {
+                file << ",,,";
+            }
             file << "OK\n";
         }
 
