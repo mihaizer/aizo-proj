@@ -7,6 +7,8 @@
 
 namespace DataFile
 {
+// Funkcje pracuja na formacie z tresci zadania: pierwsza linia to liczba elementow,
+// a kolejne linie zawieraja wartosci tego samego typu.
 template <typename T>
 bool readValues(const std::string &path, DynamicArray<T> &values, std::string &error); // DataFile::readValues("in.txt", data, error); wczytuje format: liczba elementow i kolejne wartosci.
 

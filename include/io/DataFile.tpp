@@ -9,6 +9,7 @@ namespace DataFile
 {
 namespace Detail
 {
+// Pomocnicze parsowanie dla char: token moze byc znakiem albo liczba z zakresu typu char.
 bool parseIntToken(const std::string &token, int &value)
 {
     std::istringstream stream(token);
@@ -16,6 +17,7 @@ bool parseIntToken(const std::string &token, int &value)
     return !stream.fail() && stream.eof();
 }
 
+// Unsigned char nie powinien przyjmowac wartosci ujemnych zapisanych tekstowo.
 bool parseUnsignedIntToken(const std::string &token, unsigned int &value)
 {
     if (!token.empty() && token[0] == '-')
@@ -31,6 +33,7 @@ bool parseUnsignedIntToken(const std::string &token, unsigned int &value)
 template <typename T>
 bool readValue(std::istream &input, T &value)
 {
+    // Char traktujemy osobno, bo operator>> dla char czyta pojedynczy znak, a pliki moga zawierac tez kod liczbowy.
     if constexpr (std::is_same<T, char>::value)
     {
         std::string token;
@@ -56,6 +59,7 @@ bool readValue(std::istream &input, T &value)
         value = static_cast<char>(number);
         return true;
     }
+    // Unsigned char tez obslugujemy recznie, zeby przy zapisie i odczycie nie pomylic go z tekstowym znakiem.
     else if constexpr (std::is_same<T, unsigned char>::value)
     {
         std::string token;
@@ -82,6 +86,7 @@ bool readValue(std::istream &input, T &value)
     }
     else
     {
+        // Dla liczb i std::string wystarcza standardowy operator strumieniowy.
         input >> value;
         return !input.fail();
     }
@@ -90,6 +95,7 @@ bool readValue(std::istream &input, T &value)
 template <typename T>
 void writeValue(std::ostream &output, const T &value)
 {
+    // Unsigned char zapisujemy jako liczbe, bo bez rzutowania strumien potraktowalby go jak znak.
     if constexpr (std::is_same<T, unsigned char>::value)
     {
         output << static_cast<unsigned int>(value);
@@ -104,6 +110,7 @@ void writeValue(std::ostream &output, const T &value)
 template <typename T>
 bool readValues(const std::string &path, DynamicArray<T> &values, std::string &error)
 {
+    // Odczytujemy caly plik do tymczasowej tablicy. Dopiero poprawny odczyt podmienia wynik.
     std::ifstream input(path);
     if (!input.is_open())
     {
@@ -111,6 +118,7 @@ bool readValues(const std::string &path, DynamicArray<T> &values, std::string &e
         return false;
     }
 
+    // Pierwsza wartosc okresla rozmiar struktury, zgodnie z formatem z PDF.
     int count = 0;
     input >> count;
     if (input.fail() || count < 0)
@@ -119,6 +127,7 @@ bool readValues(const std::string &path, DynamicArray<T> &values, std::string &e
         return false;
     }
 
+    // DynamicArray ma juz ustalony rozmiar, wiec wartosci wpisujemy bez pushBack.
     DynamicArray<T> loaded(count);
     for (int i = 0; i < count; i++)
     {
@@ -129,6 +138,7 @@ bool readValues(const std::string &path, DynamicArray<T> &values, std::string &e
         }
     }
 
+    // Przypisanie korzysta z operatora DynamicArray, wiec dziala rowniez dla std::string.
     values = loaded;
     error.clear();
     return true;
@@ -137,6 +147,7 @@ bool readValues(const std::string &path, DynamicArray<T> &values, std::string &e
 template <typename T>
 bool writeValues(const std::string &path, const IStructure<T> &values, std::string &error)
 {
+    // Zapis ma ten sam format co wejscie: liczba elementow, potem jedna wartosc w kazdej linii.
     std::ofstream output(path);
     if (!output.is_open())
     {
