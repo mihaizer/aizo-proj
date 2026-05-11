@@ -1,12 +1,63 @@
-# Скомпилированные файлы
+# Build directories
 build/
+Build/
+build-*/
 bin/
-*.o
-*.so
-*.dylib
+cmake-build-debug/
 
-# Мусор ОС и IDE
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+install_manifest.txt
+compile_commands.json
+
+# Compiled files and libraries
+*.d
+*.dwo
+*.gch
+*.pch
+*.slo
+*.lo
+*.o
+*.obj
+*.ilk
+*.pdb
+*.so
+*.so.*
+*.dylib
+*.dll
+*.lai
+*.la
+*.a
+*.lib
+*.exe
+*.out
+*.app
+
+# Local editor and OS files
 .DS_Store
 .vscode/
 .idea/
-cmake-build-debug/
+*.swp
+
+# Temporary files and test output
+*.tmp
+*.log
+*.bak
+Testing/
+.cache/
+results.csv
+
+# Local dependency checkouts
+for-students-master/
+
+docs/PLAN.md
+docs/assignment/session_decisions_2026-05-09.md
+
+# vcpkg
+vcpkg_installed/
+docs/assignment/requirements.md
+docs/assignment
+.codex

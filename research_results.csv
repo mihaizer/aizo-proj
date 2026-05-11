@@ -1,0 +1,11 @@
+timestamp,algorithm,structure,data_type,distribution,size,iterations,iteration_id,duration_us,min_us,avg_us,max_us,status
+2026-05-11 17:17:32,merge,array,int,random,10000,10,1,4819,2551,2980.30,4819,OK
+2026-05-11 17:17:32,merge,array,int,random,10000,10,2,2928,2551,2980.30,4819,OK
+2026-05-11 17:17:32,merge,array,int,random,10000,10,3,3098,2551,2980.30,4819,OK
+2026-05-11 17:17:32,merge,array,int,random,10000,10,4,2937,2551,2980.30,4819,OK
+2026-05-11 17:17:32,merge,array,int,random,10000,10,5,2816,2551,2980.30,4819,OK
+2026-05-11 17:17:32,merge,array,int,random,10000,10,6,2811,2551,2980.30,4819,OK
+2026-05-11 17:17:32,merge,array,int,random,10000,10,7,2634,2551,2980.30,4819,OK
+2026-05-11 17:17:32,merge,array,int,random,10000,10,8,2582,2551,2980.30,4819,OK
+2026-05-11 17:17:32,merge,array,int,random,10000,10,9,2627,2551,2980.30,4819,OK
+2026-05-11 17:17:32,merge,array,int,random,10000,10,10,2551,2551,2980.30,4819,OK

@@ -1,0 +1,2 @@
+timestamp,algorithm,structure,data_type,distribution,size,iterations,iteration_id,duration_us,min_us,avg_us,max_us,status
+2026-05-11 18:28:57,merge,array,int,random,50000,1,1,15488,15488,15488.00,15488,OK

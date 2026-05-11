@@ -1,0 +1,9 @@
+task_id,badanie,timestamp,algorithm,structure,data_type,distribution,size,iterations,min_us,avg_us,max_us,status
+25,B,2026-05-11 20:56:51,merge,array,int,random,25000,50,4391,4425.08,4894,OK
+26,B,2026-05-11 20:56:51,merge,array,int,ascending,25000,50,2379,2388.5,2506,OK
+27,B,2026-05-11 20:56:51,merge,array,int,ascending50Per,25000,50,3455,3482.3,3906,OK
+28,B,2026-05-11 20:56:52,merge,array,int,descending,25000,50,2345,2361.16,2511,OK
+29,B,2026-05-11 20:56:52,merge,singleList,int,random,25000,50,3194,3236.94,3386,OK
+30,B,2026-05-11 20:56:52,merge,singleList,int,ascending,25000,50,1372,1396.62,1722,OK
+31,B,2026-05-11 20:56:53,merge,singleList,int,ascending50Per,25000,50,2335,2357.72,2467,OK
+32,B,2026-05-11 20:56:53,merge,singleList,int,descending,25000,50,1331,1339.36,1391,OK
