@@ -1,10 +1,12 @@
 #include <iostream>
+#include <random>
 #include <string>
 
 #include "Parameters.h"
 #include "algorithms/CocktailSort.h"
 #include "algorithms/InsertionSort.h"
 #include "algorithms/MergeSort.h"
+#include "benchmark/DataGenerator.h"
 #include "io/DataFile.h"
 #include "structures/DynamicArray.h"
 #include "structures/SinglyLinkedList.h"
@@ -86,6 +88,12 @@ namespace
     int failMissing(const char *parameterName)
     {
         std::cerr << "ERROR: missing required parameter " << parameterName << ".\n";
+        return 1;
+    }
+
+    int failPositiveRequired(const char *parameterName)
+    {
+        std::cerr << "ERROR: parameter " << parameterName << " must be greater than 0.\n";
         return 1;
     }
 
@@ -197,6 +205,16 @@ namespace
             std::cerr << "ERROR: selected distribution is not a real benchmark distribution.\n";
             std::cerr << "Supported distributions: 0 - random, 1 - ascending, 2 - ascending 50%, 3 - descending.\n";
             return 1;
+        }
+
+        if (Parameters::structureSize <= 0)
+        {
+            return failPositiveRequired("--structureSize");
+        }
+
+        if (Parameters::iterations <= 0)
+        {
+            return failPositiveRequired("--iterations");
         }
 
         return 0;
@@ -352,6 +370,95 @@ namespace
         }
     }
 
+    template <typename T>
+    int generateBenchmarkArray(std::mt19937 &rng)
+    {
+        for (int iteration = 0; iteration < Parameters::iterations; iteration++)
+        {
+            DynamicArray<T> values(Parameters::structureSize);
+            DataGenerator::fill(values, Parameters::structureSize, Parameters::distribution, rng);
+
+            if (values.size() != Parameters::structureSize)
+            {
+                std::cerr << "ERROR: benchmark generator created array with invalid size.\n";
+                return 1;
+            }
+        }
+
+        return 0;
+    }
+
+    template <typename T>
+    int generateBenchmarkList(std::mt19937 &rng)
+    {
+        for (int iteration = 0; iteration < Parameters::iterations; iteration++)
+        {
+            SinglyLinkedList<T> values;
+            DataGenerator::fill(values, Parameters::structureSize, Parameters::distribution, rng);
+
+            if (values.size() != Parameters::structureSize)
+            {
+                std::cerr << "ERROR: benchmark generator created list with invalid size.\n";
+                return 1;
+            }
+        }
+
+        return 0;
+    }
+
+    template <typename T>
+    int runBenchmarkForType(std::mt19937 &rng)
+    {
+        // W benchmarku tworzymy dane bez plikow, zeby pozniej mierzyc tylko czas sortowania.
+        switch (Parameters::structure)
+        {
+        case Parameters::Structures::array:
+            return generateBenchmarkArray<T>(rng);
+        case Parameters::Structures::singleList:
+            return generateBenchmarkList<T>(rng);
+        case Parameters::Structures::doubleList:
+        case Parameters::Structures::queue:
+        case Parameters::Structures::stack:
+        case Parameters::Structures::binaryTree:
+        case Parameters::Structures::undefined:
+        case Parameters::Structures::count:
+            std::cerr << "ERROR: unsupported structure.\n";
+            return 1;
+        }
+
+        std::cerr << "ERROR: unsupported structure.\n";
+        return 1;
+    }
+
+    int runBenchmark()
+    {
+        // Staly seed ulatwia powtorzenie tego samego testu podczas sprawdzania generatora.
+        std::mt19937 rng(123456789U);
+
+        switch (Parameters::dataType)
+        {
+        case Parameters::DataTypes::typeInt:
+            return runBenchmarkForType<int>(rng);
+        case Parameters::DataTypes::typeFloat:
+            return runBenchmarkForType<float>(rng);
+        case Parameters::DataTypes::typeDouble:
+            return runBenchmarkForType<double>(rng);
+        case Parameters::DataTypes::typeChar:
+            return runBenchmarkForType<char>(rng);
+        case Parameters::DataTypes::typeString:
+            return runBenchmarkForType<std::string>(rng);
+        case Parameters::DataTypes::tyleUnsignedInt:
+            return runBenchmarkForType<unsigned int>(rng);
+        case Parameters::DataTypes::typeUnsignedLong:
+            return runBenchmarkForType<unsigned long>(rng);
+        case Parameters::DataTypes::typeUnsignedChar:
+            return runBenchmarkForType<unsigned char>(rng);
+        default:
+            std::cerr << "ERROR: unsupported data type.\n";
+            return 1;
+        }
+    }
+
     int runValidatedMode()
     {
         std::cout << "Library version: " << Parameters::getVersion() << "\n";
@@ -365,7 +472,14 @@ namespace
 
         if (Parameters::runMode == Parameters::RunModes::benchmark)
         {
-            std::cout << "benchmark mode selected. Data generation and CSV results are not implemented yet.\n";
+            int benchmarkResult = runBenchmark();
+            if (benchmarkResult != 0)
+            {
+                return benchmarkResult;
+            }
+
+            std::cout << "Benchmark data generated for " << Parameters::iterations << " iteration(s).\n";
+            std::cout << "Timing and CSV results are not implemented yet.\n";
             return 0;
         }
 
