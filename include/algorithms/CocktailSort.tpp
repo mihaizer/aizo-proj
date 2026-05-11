@@ -72,10 +72,14 @@ public:
             return;
         }
 
+        // nodes to tablica wskaznikow na wezly:
+        // nodes[i] przechowuje adres i-tego wezla listy.
         Node **nodes = new Node *[values.currentSize];
         Node *current = values.head;
         for (int index = 0; index < values.currentSize; index++)
         {
+            // Zapamietujemy adres biezacego wezla, aby potem miec szybki dostep
+            // do kolejnych elementow bez przechodzenia od head za kazdym razem.
             nodes[index] = current;
             current = current->next;
         }

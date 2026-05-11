@@ -25,7 +25,7 @@ if(NOT EXISTS "${PARAMETERS_LIBRARY_FILE}")
   message(FATAL_ERROR "Required shared library not found: ${PARAMETERS_LIBRARY_FILE}")
 endif()
 
-add_library(parameters SHARED IMPORTED GLOBAL)
+add_library(parameters SHARED IMPORTED)
 set_target_properties(parameters PROPERTIES
   IMPORTED_LOCATION "${PARAMETERS_LIBRARY_FILE}"
 )

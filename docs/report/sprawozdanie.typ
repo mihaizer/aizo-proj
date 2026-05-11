@@ -92,49 +92,6 @@ Dla `SinglyLinkedList` zastosowano osobną implementację opartą na wskaźnikac
 
 Dla `SinglyLinkedList` zastosowano drugą wersję algorytmu. Zamiast próbować przesuwać elementy przez kosztowny dostęp indeksowy, implementacja buduje nową uporządkowaną część listy. Kolejne węzły są wyjmowane z listy wejściowej i wstawiane w odpowiednie miejsce już posortowanej części. Dzięki temu algorytm korzysta z naturalnych operacji listowych i nie opiera się na `operator[]` [2][5].
 
-== Walidacja parametrów i pomiar czasu
-
-Program sprawdza poprawność parametrów wejściowych w funkcjach `validateRunMode()`, `validateCommonParameters()`, `validateSingleFileParameters()`, `validateBenchmarkParameters()` oraz `validateParameters()`. Kod ten weryfikuje m.in. tryb pracy, obecność wymaganego algorytmu, struktury i typu danych, poprawność rozkładu oraz obowiązkowych parametrów benchmarku:
-
-```cpp
-int validateParameters()
-{
-    int runModeResult = validateRunMode();
-    if (runModeResult != 0)
-    {
-        return runModeResult;
-    }
-
-    int commonResult = validateCommonParameters();
-    if (commonResult != 0)
-    {
-        return commonResult;
-    }
-
-    int singleFileResult = validateSingleFileParameters();
-    if (singleFileResult != 0)
-    {
-        return singleFileResult;
-    }
-
-    return validateBenchmarkParameters();
-}
-```
-
-Po wykonaniu sortowania wynik jest sprawdzany funkcją `isSortedAscending(...)`. Pomiar czasu wykonywany jest przy pomocy `std::chrono`, a do pomiaru wchodzi wyłącznie samo sortowanie. Jeśli benchmark zakończyłby się błędem, funkcja kończy działanie przed zapisaniem czasu, więc do CSV trafiają tylko poprawnie zakończone iteracje. Odpowiada za to fragment:
-
-```cpp
-auto start = std::chrono::steady_clock::now();
-if (runBenchmarkSort<T, Structure>(values) != 0)
-{
-    std::cerr << "ERROR: sorting failed during benchmark iteration " << iteration << ".\n";
-    return 1;
-}
-auto end = std::chrono::steady_clock::now();
-
-long long duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-```
-
 = Metodyka badań
 
 W niniejszym sprawozdaniu termin `główne badanie` odnosi się do trzech części eksperymentu opisanych w treści zadania: `Badanie A`, `Badanie B` i `Badanie C`. Wewnątrz każdego głównego badania wykonywano pojedyncze benchmarki, czyli uruchomienia programu z ustalonym zestawem parametrów: algorytmem, strukturą danych, typem danych, rozkładem wejścia i rozmiarem zbioru. Każdy benchmark był następnie powtarzany 50 razy. Jedno takie powtórzenie jest w tym sprawozdaniu nazywane `iteracją`.

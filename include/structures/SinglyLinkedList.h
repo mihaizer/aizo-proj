@@ -3,67 +3,86 @@
 #include "IStructure.h"
 
 template <typename T>
-class SinglyLinkedList; // Zapis wczesniejszy: mowi kompilatorowi, ze taka klasa istnieje, zanim damy pelna definicje.
+class SinglyLinkedList;
 
 template <typename T>
-bool isSortedAscending(const SinglyLinkedList<T> &values); // Deklaracja pomocniczej wersji sprawdzania sortowania dla listy.
+// Specjalna wersja sprawdzania posortowania dla listy jednokierunkowej.
+bool isSortedAscending(const SinglyLinkedList<T> &values);
 
 namespace CocktailSort
 {
 template <typename T>
-struct SinglyLinkedListAccess; // Pomocnik CocktailSort, ktory dostaje dostep do prywatnych pol listy.
+// Pomocnik z dostepem friend dla wersji CocktailSort przeznaczonej dla listy.
+struct SinglyLinkedListAccess;
 }
 
 namespace InsertionSort
 {
 template <typename T>
-struct SinglyLinkedListAccess; // Pomocnik InsertionSort, ktory moze przepinac wezly bez publicznego API.
+// Pomocnik z dostepem friend dla wersji InsertionSort przeznaczonej dla listy.
+struct SinglyLinkedListAccess;
 }
 
 namespace MergeSort
 {
 template <typename T>
-struct SinglyLinkedListAccess; // Pomocnik MergeSort, ktory sortuje liste przez bezposrednie operacje na wezlach.
+// Pomocnik z dostepem friend dla wersji MergeSort przeznaczonej dla listy.
+struct SinglyLinkedListAccess;
 }
 
-template <typename T> // SinglyLinkedList<int> list; tutaj T oznacza typ przechowywanej wartosci.
-class SinglyLinkedList : public IStructure<T> // Implementuje IStructure<T> jako lista jednokierunkowa.
+template <typename T>
+class SinglyLinkedList : public IStructure<T>
 {
-private: // Wezly i wskazniki sa szczegolem implementacji listy.
-    struct Node // Node przechowuje jedna wartosc i wskaznik na nastepny element listy.
+private:
+    // Wewnetrzny wezel listy jednokierunkowej.
+    struct Node
     {
-        T value; // node.value; przechowuje dane elementu.
-        Node *next; // node.next; prowadzi do kolejnego wezla albo nullptr na koncu listy.
+        T value;
+        Node *next;
     };
 
-    Node *head; // head; wskazuje pierwszy element listy.
-    Node *tail; // tail; wskazuje ostatni element, zeby pushBack byl szybki.
-    int currentSize; // list.size(); zwraca aktualna liczbe elementow.
+    Node *head; // Pierwszy wezel listy albo nullptr, gdy lista jest pusta.
+    Node *tail; // Ostatni wezel listy, aby pushBack dzialal w O(1).
+    int currentSize; // Liczba przechowywanych elementow, a nie indeks ostatniego.
 
-    void clear(); // clear(); usuwa wszystkie wezly i ustawia pusta liste.
-    void copyFrom(const SinglyLinkedList &other); // copyFrom(other); kopiuje elementy przez pushBack.
-    Node *nodeAt(int index); // nodeAt(2); znajduje wezel pod indeksem do zapisu.
-    const Node *nodeAt(int index) const; // nodeAt(2); znajduje wezel pod indeksem do odczytu const.
+    // Usuwa wszystkie wezly i przywraca stan pustej listy.
+    void clear();
+    // Kopiuje wezly z innej listy z zachowaniem kolejnosci.
+    void copyFrom(const SinglyLinkedList &other);
+    // Zwraca wskaznik do wezla pod podanym indeksem.
+    Node *nodeAt(int index);
+    // Wersja const nodeAt do dostepu tylko do odczytu.
+    const Node *nodeAt(int index) const;
 
-    friend struct CocktailSort::SinglyLinkedListAccess<T>; // CocktailSort::sort(list); helper przechodzi po wezlowach bez operator[].
-    friend struct InsertionSort::SinglyLinkedListAccess<T>; // InsertionSort::sort(list); helper przepina wezly bez wolnego dostepu.
-    friend struct MergeSort::SinglyLinkedListAccess<T>; // MergeSort::sort(list); helper moze przepinac prywatne wezly listy.
-    friend bool isSortedAscending<T>(const SinglyLinkedList<T> &values); // isSortedAscending(list); sprawdza liste liniowo.
+    // Umozliwia helperom sortowania i funkcji walidujacej bezposredni dostep do wnetrza listy.
+    friend struct CocktailSort::SinglyLinkedListAccess<T>;
+    friend struct InsertionSort::SinglyLinkedListAccess<T>;
+    friend struct MergeSort::SinglyLinkedListAccess<T>;
+    friend bool isSortedAscending<T>(const SinglyLinkedList<T> &values);
 
-public: // Publiczne metody sa zgodne z interfejsem IStructure<T>.
-    SinglyLinkedList(); // SinglyLinkedList<int> list; tworzy pusta liste.
-    ~SinglyLinkedList() override; // delete ptr; nadpisuje wirtualny destruktor i zwalnia wezly.
+public:
+    // Tworzy pusta liste.
+    SinglyLinkedList();
+    // Zwalnia wszystkie zaalokowane wezly.
+    ~SinglyLinkedList() override;
 
-    SinglyLinkedList(const SinglyLinkedList &other); // SinglyLinkedList<int> copy = list; tworzy niezalezna kopie.
-    SinglyLinkedList &operator=(const SinglyLinkedList &other); // copy = list; zamienia zawartosc listy na kopie other.
+    // Konstruktor kopiujacy wykonuje gleboka kopie wezlow.
+    SinglyLinkedList(const SinglyLinkedList &other);
+    // Zastepuje biezaca zawartosc gleboka kopia other.
+    SinglyLinkedList &operator=(const SinglyLinkedList &other);
 
-    int size() const override; // int n = list.size(); nadpisuje IStructure<T>::size().
-    void pushBack(const T &value) override; // list.pushBack(7); nadpisuje IStructure<T>::pushBack() i dodaje na koniec.
+    // Zwraca biezaca liczbe elementow.
+    int size() const override;
+    // Dodaje wartosc na koniec listy.
+    void pushBack(const T &value) override;
 
-    T &operator[](int index) override; // list[0] = 10; nadpisuje IStructure<T>::operator[] do zapisu.
-    const T &operator[](int index) const override; // int x = list[0]; nadpisuje operator[] do odczytu const.
+    // Zwraca dostep do wartosci pod podanym indeksem.
+    T &operator[](int index) override;
+    // Zwraca dostep tylko do odczytu do wartosci pod podanym indeksem.
+    const T &operator[](int index) const override;
 
-    void swap(int i, int j) override; // list.swap(0, 1); nadpisuje IStructure<T>::swap() i zamienia wartosci wezlow.
+    // Zamienia miejscami wartosci w dwoch wezlach wskazanych indeksami.
+    void swap(int i, int j) override;
 };
 
 #include "SinglyLinkedList.tpp"

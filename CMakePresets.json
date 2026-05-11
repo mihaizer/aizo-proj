@@ -1,32 +1,21 @@
 {
   "version": 6,
-  "cmakeMinimumRequired": {
-    "major": 3,
-    "minor": 31,
-    "patch": 0
-  },
   "configurePresets": [
     {
       "name": "default",
-      "displayName": "Default configure",
       "generator": "Unix Makefiles",
-      "binaryDir": "${sourceDir}/build",
-      "cacheVariables": {
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
+      "binaryDir": "${sourceDir}/build"
     }
   ],
   "buildPresets": [
     {
       "name": "default",
-      "displayName": "Default build",
       "configurePreset": "default"
     }
   ],
   "workflowPresets": [
     {
       "name": "default",
-      "displayName": "Configure and build",
       "steps": [
         {
           "type": "configure",

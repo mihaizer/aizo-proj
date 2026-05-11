@@ -503,7 +503,7 @@ namespace
     int ensureBenchmarkCsvReady(const std::string &path)
     {
         constexpr const char *csvHeader =
-            "timestamp,algorithm,structure,data_type,distribution,size,iterations,iteration_id,duration_us,min_us,avg_us,max_us,status";
+            "timestamp,algorithm,structure,data_type,distribution,size,iterations,iteration_id,duration_us,min_us,avg_us,max_us";
         bool fileExists = false;
         {
             std::ifstream test(path);
@@ -549,7 +549,7 @@ namespace
         file << Parameters::structureSize << ",";
         file << Parameters::iterations << ",";
         file << iterationId << ",";
-        file << duration_us << ",,,,OK\n";
+        file << duration_us << ",,,\n";
         file.flush();
 
         if (!file.good())

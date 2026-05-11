@@ -2,7 +2,6 @@
 
 import argparse
 import csv
-import math
 from pathlib import Path
 
 import matplotlib
@@ -114,7 +113,6 @@ def validate_and_summarize(rows):
             "distribution",
             "size",
             "iterations",
-            "status",
         )
         for row in block[1:]:
             for field in stable_fields:
@@ -133,28 +131,19 @@ def validate_and_summarize(rows):
                 f"Task {task_id} has invalid iteration sequence: {iteration_ids[:5]}...{iteration_ids[-5:]}."
             )
 
-        if not last["min_us"] or not last["avg_us"] or not last["max_us"]:
-            raise ValueError(f"Task {task_id} summary row is missing min/avg/max values.")
-
         raw_durations = [int(row["duration_us"]) for row in block]
         computed_min = min(raw_durations)
         computed_max = max(raw_durations)
         computed_avg = sum(raw_durations) / len(raw_durations)
-
-        min_us = int(last["min_us"])
-        avg_us = float(last["avg_us"])
-        max_us = int(last["max_us"])
-
-        if min_us != computed_min or max_us != computed_max or not math.isclose(avg_us, computed_avg, abs_tol=0.02):
-            raise ValueError(
-                f"Task {task_id} summary values do not match the raw durations."
-            )
+        min_us = computed_min
+        avg_us = computed_avg
+        max_us = computed_max
 
         summaries.append(
             {
                 "task_id": task_id,
                 "badanie": badanie_for_task(task_id),
-                "timestamp": first["timestamp"],
+                "timestamp": last["timestamp"],
                 "algorithm": first["algorithm"],
                 "structure": first["structure"],
                 "data_type": first["data_type"],
@@ -164,7 +153,6 @@ def validate_and_summarize(rows):
                 "min_us": min_us,
                 "avg_us": round(avg_us, 2),
                 "max_us": max_us,
-                "status": first["status"],
             }
         )
 
@@ -185,7 +173,6 @@ def write_summary_csv(path, records):
         "min_us",
         "avg_us",
         "max_us",
-        "status",
     ]
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
@@ -241,6 +228,8 @@ def create_badanie_a_plot(records, structure, output_path):
 def create_badanie_b_plot(records, structure, output_path):
     distribution_order = ["random", "ascending", "ascending50Per", "descending"]
     values = []
+    lower_errors = []
+    upper_errors = []
     for distribution in distribution_order:
         match = next(
             record
@@ -248,6 +237,8 @@ def create_badanie_b_plot(records, structure, output_path):
             if record["structure"] == structure and record["distribution"] == distribution
         )
         values.append(match["avg_us"])
+        lower_errors.append(match["avg_us"] - match["min_us"])
+        upper_errors.append(match["max_us"] - match["avg_us"])
 
     fig, ax = plt.subplots(figsize=(9, 5))
     positions = list(range(len(distribution_order)))
@@ -256,6 +247,10 @@ def create_badanie_b_plot(records, structure, output_path):
         values,
         color=["#2563eb", "#16a34a", "#d97706", "#dc2626"],
         edgecolor="#1f2937",
+        yerr=[lower_errors, upper_errors],
+        capsize=6,
+        ecolor=(0, 0, 0, 0.75),
+        error_kw={"elinewidth": 1.8, "capthick": 1.8},
     )
     ax.set_title(f"Badanie B - MergeSort / {STRUCTURE_LABELS[structure]}")
     ax.set_xlabel("rozklad danych")
@@ -273,9 +268,13 @@ def create_badanie_b_plot(records, structure, output_path):
 def create_badanie_c_plot(records, output_path):
     type_order = ["int", "float", "unsigned_int"]
     values = []
+    lower_errors = []
+    upper_errors = []
     for data_type in type_order:
         match = next(record for record in records if record["data_type"] == data_type)
         values.append(match["avg_us"])
+        lower_errors.append(match["avg_us"] - match["min_us"])
+        upper_errors.append(match["max_us"] - match["avg_us"])
 
     fig, ax = plt.subplots(figsize=(8, 5))
     positions = list(range(len(type_order)))
@@ -284,6 +283,10 @@ def create_badanie_c_plot(records, output_path):
         values,
         color=["#0f766e", "#7c3aed", "#b91c1c"],
         edgecolor="#1f2937",
+        yerr=[lower_errors, upper_errors],
+        capsize=6,
+        ecolor=(0, 0, 0, 0.75),
+        error_kw={"elinewidth": 1.8, "capthick": 1.8},
     )
     ax.set_title("Badanie C - MergeSort / DynamicArray / 25000")
     ax.set_xlabel("typ danych")
