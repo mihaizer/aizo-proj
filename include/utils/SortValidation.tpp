@@ -13,3 +13,20 @@ bool isSortedAscending(const IStructure<T> &values)
 
     return true;
 }
+
+template <typename T>
+bool isSortedAscending(const SinglyLinkedList<T> &values)
+{
+    auto current = values.head;
+    while (current != nullptr && current->next != nullptr)
+    {
+        if (current->next->value < current->value)
+        {
+            return false;
+        }
+
+        current = current->next;
+    }
+
+    return true;
+}

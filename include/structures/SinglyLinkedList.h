@@ -2,6 +2,24 @@
 
 #include "IStructure.h"
 
+template <typename T>
+class SinglyLinkedList;
+
+template <typename T>
+bool isSortedAscending(const SinglyLinkedList<T> &values);
+
+namespace CocktailSort
+{
+template <typename T>
+struct SinglyLinkedListAccess;
+}
+
+namespace InsertionSort
+{
+template <typename T>
+struct SinglyLinkedListAccess;
+}
+
 namespace MergeSort
 {
 template <typename T>
@@ -27,7 +45,10 @@ private: // Wezly i wskazniki sa szczegolem implementacji listy.
     Node *nodeAt(int index); // nodeAt(2); znajduje wezel pod indeksem do zapisu.
     const Node *nodeAt(int index) const; // nodeAt(2); znajduje wezel pod indeksem do odczytu const.
 
+    friend struct CocktailSort::SinglyLinkedListAccess<T>; // CocktailSort::sort(list); helper przechodzi po wezlowach bez operator[].
+    friend struct InsertionSort::SinglyLinkedListAccess<T>; // InsertionSort::sort(list); helper przepina wezly bez wolnego dostepu.
     friend struct MergeSort::SinglyLinkedListAccess<T>; // MergeSort::sort(list); helper moze przepinac prywatne wezly listy.
+    friend bool isSortedAscending<T>(const SinglyLinkedList<T> &values); // isSortedAscending(list); sprawdza liste liniowo.
 
 public: // Publiczne metody sa zgodne z interfejsem IStructure<T>.
     SinglyLinkedList(); // SinglyLinkedList<int> list; tworzy pusta liste.

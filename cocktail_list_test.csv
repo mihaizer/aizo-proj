@@ -1,0 +1,4 @@
+timestamp,algorithm,structure,data_type,distribution,size,iterations,iteration_id,duration_us,min_us,avg_us,max_us,status
+2026-05-11 18:29:58,cocktail,singleList,int,random,10,3,1,2,1,1.67,2,OK
+2026-05-11 18:29:58,cocktail,singleList,int,random,10,3,2,2,1,1.67,2,OK
+2026-05-11 18:29:58,cocktail,singleList,int,random,10,3,3,1,1,1.67,2,OK

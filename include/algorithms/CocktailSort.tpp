@@ -49,4 +49,82 @@ void sort(IStructure<T> &values)
         left++;
     }
 }
+
+template <typename T>
+struct SinglyLinkedListAccess
+{
+private:
+    using List = SinglyLinkedList<T>;
+    using Node = typename SinglyLinkedList<T>::Node;
+
+    static void swapValues(Node *left, Node *right)
+    {
+        T temp = left->value;
+        left->value = right->value;
+        right->value = temp;
+    }
+
+public:
+    static void sort(List &values)
+    {
+        if (values.currentSize < 2)
+        {
+            return;
+        }
+
+        Node **nodes = new Node *[values.currentSize];
+        Node *current = values.head;
+        for (int index = 0; index < values.currentSize; index++)
+        {
+            nodes[index] = current;
+            current = current->next;
+        }
+
+        bool swapped = true;
+        int left = 0;
+        int right = values.currentSize - 1;
+
+        while (swapped)
+        {
+            swapped = false;
+
+            // Dla listy przechodzimy po zapamietanych wskaznikach, a nie przez kosztowne nodeAt(index).
+            for (int index = left; index < right; index++)
+            {
+                if (nodes[index + 1]->value < nodes[index]->value)
+                {
+                    swapValues(nodes[index], nodes[index + 1]);
+                    swapped = true;
+                }
+            }
+
+            right--;
+            if (!swapped)
+            {
+                break;
+            }
+
+            swapped = false;
+
+            for (int index = right; index > left; index--)
+            {
+                if (nodes[index]->value < nodes[index - 1]->value)
+                {
+                    swapValues(nodes[index], nodes[index - 1]);
+                    swapped = true;
+                }
+            }
+
+            left++;
+        }
+
+        delete[] nodes;
+    }
+};
+
+template <typename T>
+void sort(SinglyLinkedList<T> &values)
+{
+    SinglyLinkedListAccess<T>::sort(values);
+}
 }
