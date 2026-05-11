@@ -2,6 +2,7 @@
 #include <string>
 
 #include "Parameters.h"
+#include "algorithms/InsertionSort.h"
 #include "io/DataFile.h"
 #include "structures/DynamicArray.h"
 #include "utils/SortValidation.h"
@@ -224,6 +225,27 @@ namespace
     }
 
     template <typename T>
+    int sortSingleFileValues(IStructure<T> &values)
+    {
+        // W tym kroku podlaczamy tylko pierwsza kombinacje: insertion sort + dynamic array.
+        if (Parameters::structure != Parameters::Structures::array)
+        {
+            std::cerr << "ERROR: selected structure is not connected to singleFile sorting yet.\n";
+            return 1;
+        }
+
+        if (Parameters::algorithm != Parameters::Algorithms::insertion)
+        {
+            std::cerr << "ERROR: selected algorithm is not connected to singleFile sorting yet.\n";
+            std::cerr << "Implemented now: 3 - Insertion sort.\n";
+            return 1;
+        }
+
+        InsertionSort::sort(values);
+        return 0;
+    }
+
+    template <typename T>
     int runSingleFileForType()
     {
         // Typ T jest wybierany na podstawie Parameters::dataType, a sam odczyt korzysta z tego samego formatu:
@@ -238,19 +260,22 @@ namespace
 
         std::cout << "Loaded " << values.size() << " values from " << Parameters::inputFile << ".\n";
 
-        // Algorytmy sortowania beda podlaczone w kolejnym kroku, dlatego tutaj nie poprawiamy jeszcze kolejnosci.
-        // Walidacja pozwala sprawdzic sam pipeline plikow bez udawania, ze sortowanie juz dziala.
+        if (sortSingleFileValues(values) != 0)
+        {
+            return 1;
+        }
+
+        // Po sortowaniu sprawdzamy wynik wlasna funkcja, bez uzywania gotowych algorytmow sortujacych.
         if (!isSortedAscending(values))
         {
-            std::cerr << "ERROR: loaded data is not sorted ascending yet.\n";
-            std::cerr << "Sorting algorithms are not connected in this step, so no sorted output was written.\n";
+            std::cerr << "ERROR: sorting verification failed.\n";
             return 1;
         }
 
         // Plik wyjsciowy jest opcjonalny w singleFile, wiec brak --outputFile nie jest bledem.
         if (Parameters::outputFile.empty())
         {
-            std::cout << "Data is sorted ascending. No output file was requested.\n";
+            std::cout << "Data was sorted ascending. No output file was requested.\n";
             return 0;
         }
 
@@ -261,7 +286,7 @@ namespace
             return 1;
         }
 
-        std::cout << "Data is sorted ascending and was written to " << Parameters::outputFile << ".\n";
+        std::cout << "Data was sorted ascending and written to " << Parameters::outputFile << ".\n";
         return 0;
     }
 
