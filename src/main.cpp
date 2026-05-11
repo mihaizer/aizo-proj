@@ -5,6 +5,7 @@
 #include "algorithms/InsertionSort.h"
 #include "io/DataFile.h"
 #include "structures/DynamicArray.h"
+#include "structures/SinglyLinkedList.h"
 #include "utils/SortValidation.h"
 
 namespace
@@ -227,13 +228,6 @@ namespace
     template <typename T>
     int sortSingleFileValues(IStructure<T> &values)
     {
-        // W tym kroku podlaczamy tylko pierwsza kombinacje: insertion sort + dynamic array.
-        if (Parameters::structure != Parameters::Structures::array)
-        {
-            std::cerr << "ERROR: selected structure is not connected to singleFile sorting yet.\n";
-            return 1;
-        }
-
         if (Parameters::algorithm != Parameters::Algorithms::insertion)
         {
             std::cerr << "ERROR: selected algorithm is not connected to singleFile sorting yet.\n";
@@ -245,12 +239,12 @@ namespace
         return 0;
     }
 
-    template <typename T>
-    int runSingleFileForType()
+    template <typename T, typename Structure>
+    int runSingleFileForStructure()
     {
         // Typ T jest wybierany na podstawie Parameters::dataType, a sam odczyt korzysta z tego samego formatu:
         // pierwsza liczba oznacza rozmiar, kolejne tokeny to elementy struktury.
-        DynamicArray<T> values;
+        Structure values;
         std::string error;
         if (!DataFile::readValues<T>(Parameters::inputFile, values, error))
         {
@@ -288,6 +282,30 @@ namespace
 
         std::cout << "Data was sorted ascending and written to " << Parameters::outputFile << ".\n";
         return 0;
+    }
+
+    template <typename T>
+    int runSingleFileForType()
+    {
+        // Po wyborze typu danych wybieramy konkretna strukture wskazana przez Parameters::structure.
+        switch (Parameters::structure)
+        {
+        case Parameters::Structures::array:
+            return runSingleFileForStructure<T, DynamicArray<T>>();
+        case Parameters::Structures::singleList:
+            return runSingleFileForStructure<T, SinglyLinkedList<T>>();
+        case Parameters::Structures::doubleList:
+        case Parameters::Structures::queue:
+        case Parameters::Structures::stack:
+        case Parameters::Structures::binaryTree:
+        case Parameters::Structures::undefined:
+        case Parameters::Structures::count:
+            std::cerr << "ERROR: unsupported structure.\n";
+            return 1;
+        }
+
+        std::cerr << "ERROR: unsupported structure.\n";
+        return 1;
     }
 
     int runSingleFile()
