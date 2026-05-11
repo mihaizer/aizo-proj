@@ -493,7 +493,7 @@ namespace
         }
     }
 
-    int writeBenchmarkCsv(const std::string &path, long long min_us, long long max_us, double avg_us)
+    int writeBenchmarkCsv(const std::string &path, const DynamicArray<long long> &durations, long long min_us, long long max_us, double avg_us)
     {
         bool fileExists = false;
         {
@@ -508,23 +508,31 @@ namespace
             return 1;
         }
 
-        // Naglowek dodajemy tylko, jesli plik jest tworzony od zera.
+        // Naglowek z dodatkowymi kolumnami na dane kazdej iteracji.
         if (!fileExists)
         {
-            file << "timestamp,algorithm,structure,data_type,distribution,size,iterations,min_us,avg_us,max_us,status\n";
+            file << "timestamp,algorithm,structure,data_type,distribution,size,iterations,iteration_id,duration_us,min_us,avg_us,max_us,status\n";
         }
 
-        file << getCurrentTimestamp() << ",";
-        file << algorithmToString(Parameters::algorithm) << ",";
-        file << structureToString(Parameters::structure) << ",";
-        file << dataTypeToString(Parameters::dataType) << ",";
-        file << distributionToString(Parameters::distribution) << ",";
-        file << Parameters::structureSize << ",";
-        file << Parameters::iterations << ",";
-        file << min_us << ",";
-        file << std::fixed << std::setprecision(2) << avg_us << ",";
-        file << max_us << ",";
-        file << "OK\n";
+        std::string timestamp = getCurrentTimestamp();
+
+        // Zapisujemy osobny wiersz dla kazdej iteracji, powtarzajac statystyki zbiorcze.
+        for (int i = 0; i < durations.size(); i++)
+        {
+            file << timestamp << ",";
+            file << algorithmToString(Parameters::algorithm) << ",";
+            file << structureToString(Parameters::structure) << ",";
+            file << dataTypeToString(Parameters::dataType) << ",";
+            file << distributionToString(Parameters::distribution) << ",";
+            file << Parameters::structureSize << ",";
+            file << Parameters::iterations << ",";
+            file << (i + 1) << ","; // iteration_id
+            file << durations[i] << ","; // duration_us
+            file << min_us << ",";
+            file << std::fixed << std::setprecision(2) << avg_us << ",";
+            file << max_us << ",";
+            file << "OK\n";
+        }
 
         return 0;
     }
@@ -590,7 +598,7 @@ namespace
 
         if (!Parameters::resultsFile.empty())
         {
-            return writeBenchmarkCsv(Parameters::resultsFile, min_us, max_us, avg_us);
+            return writeBenchmarkCsv(Parameters::resultsFile, durations, min_us, max_us, avg_us);
         }
 
         return 0;
