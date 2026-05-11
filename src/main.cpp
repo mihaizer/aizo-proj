@@ -106,7 +106,7 @@ namespace
 
     std::string getCurrentTimestamp()
     {
-        // Tworzymy jeden czytelny znacznik czasu dla wszystkich wierszy danego testu.
+        // Pobieramy aktualny czas lokalny do natychmiastowego zapisu pojedynczego wiersza CSV.
         auto now = std::chrono::system_clock::now();
         std::time_t now_time = std::chrono::system_clock::to_time_t(now);
         std::tm *now_tm = std::localtime(&now_time);
@@ -500,9 +500,8 @@ namespace
         }
     }
 
-    int writeBenchmarkCsv(const std::string &path, const DynamicArray<long long> &durations, long long min_us, long long max_us, double avg_us)
+    int ensureBenchmarkCsvReady(const std::string &path)
     {
-        // CSV trzyma jeden blok wynikow na jedno uruchomienie testu.
         constexpr const char *csvHeader =
             "timestamp,algorithm,structure,data_type,distribution,size,iterations,iteration_id,duration_us,min_us,avg_us,max_us,status";
         bool fileExists = false;
@@ -531,38 +530,33 @@ namespace
             return 1;
         }
 
-        // Kazda iteracja jest zapisywana jako osobny pomiar z pelnym zestawem parametrow.
         if (!fileExists)
         {
             file << csvHeader << "\n";
+            file.flush();
         }
 
-        std::string timestamp = getCurrentTimestamp();
+        return 0;
+    }
 
-        // W CSV przechowujemy surowy czas kazdej iteracji.
-        // Statystyki zbiorcze dopisujemy tylko w ostatnim wierszu danego badania.
-        for (int i = 0; i < durations.size(); i++)
+    int appendBenchmarkCsvRow(std::ofstream &file, int iterationId, long long duration_us)
+    {
+        file << getCurrentTimestamp() << ",";
+        file << algorithmToString(Parameters::algorithm) << ",";
+        file << structureToString(Parameters::structure) << ",";
+        file << dataTypeToString(Parameters::dataType) << ",";
+        file << distributionToString(Parameters::distribution) << ",";
+        file << Parameters::structureSize << ",";
+        file << Parameters::iterations << ",";
+        file << iterationId << ",";
+        file << duration_us << ",,,,OK\n";
+        file.flush();
+
+        if (!file.good())
         {
-            file << timestamp << ",";
-            file << algorithmToString(Parameters::algorithm) << ",";
-            file << structureToString(Parameters::structure) << ",";
-            file << dataTypeToString(Parameters::dataType) << ",";
-            file << distributionToString(Parameters::distribution) << ",";
-            file << Parameters::structureSize << ",";
-            file << Parameters::iterations << ",";
-            file << (i + 1) << ","; // iteration_id
-            file << durations[i] << ","; // duration_us
-            if (i == durations.size() - 1)
-            {
-                file << min_us << ",";
-                file << std::fixed << std::setprecision(2) << avg_us << ",";
-                file << max_us << ",";
-            }
-            else
-            {
-                file << ",,,";
-            }
-            file << "OK\n";
+            std::cerr << "ERROR: could not append benchmark row to results file "
+                      << Parameters::resultsFile << ".\n";
+            return 1;
         }
 
         return 0;
@@ -575,6 +569,23 @@ namespace
         // Przechowujemy czasy kazdej iteracji w naszej wlasnej tablicy dynamicznej.
         DynamicArray<long long> durations;
         long long total_us = 0;
+        std::ofstream resultsFile;
+
+        if (!Parameters::resultsFile.empty())
+        {
+            if (ensureBenchmarkCsvReady(Parameters::resultsFile) != 0)
+            {
+                return 1;
+            }
+
+            resultsFile.open(Parameters::resultsFile, std::ios::app);
+            if (!resultsFile.is_open())
+            {
+                std::cerr << "ERROR: could not open results file " << Parameters::resultsFile
+                          << " for appending.\n";
+                return 1;
+            }
+        }
 
         for (int iteration = 0; iteration < Parameters::iterations; iteration++)
         {
@@ -612,6 +623,14 @@ namespace
             long long duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
             durations.pushBack(duration);
             total_us += duration;
+
+            if (resultsFile.is_open())
+            {
+                if (appendBenchmarkCsvRow(resultsFile, iteration + 1, duration) != 0)
+                {
+                    return 1;
+                }
+            }
         }
 
         long long min_us = durations[0];
@@ -627,11 +646,6 @@ namespace
         std::cout << "  min: " << min_us << " us\n";
         std::cout << "  avg: " << std::fixed << std::setprecision(2) << avg_us << " us\n";
         std::cout << "  max: " << max_us << " us\n";
-
-        if (!Parameters::resultsFile.empty())
-        {
-            return writeBenchmarkCsv(Parameters::resultsFile, durations, min_us, max_us, avg_us);
-        }
 
         return 0;
     }

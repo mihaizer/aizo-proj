@@ -1,0 +1,4 @@
+task_id,badanie,timestamp,algorithm,structure,data_type,distribution,size,iterations,min_us,avg_us,max_us,status
+33,C,2026-05-11 20:56:53,merge,array,int,random,25000,50,4382,4430.6,4782,OK
+34,C,2026-05-11 20:56:54,merge,array,float,random,25000,50,4751,5155.04,8046,OK
+35,C,2026-05-11 20:56:54,merge,array,unsigned_int,random,25000,50,4579,5984.64,61441,OK

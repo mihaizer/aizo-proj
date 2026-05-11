@@ -1,0 +1,25 @@
+task_id,badanie,timestamp,algorithm,structure,data_type,distribution,size,iterations,min_us,avg_us,max_us,status
+1,A,2026-05-11 20:35:30,cocktail,array,int,random,5000,50,83195,89108.56,152162,OK
+2,A,2026-05-11 20:35:48,cocktail,array,int,random,10000,50,339583,360762.9,482766,OK
+3,A,2026-05-11 20:37:39,cocktail,array,int,random,25000,50,2113922,2207216.92,2461371,OK
+4,A,2026-05-11 20:45:22,cocktail,array,int,random,50000,50,8560470,9263002.6,11764091,OK
+5,A,2026-05-11 20:45:24,cocktail,singleList,int,random,5000,50,36606,38083.34,41571,OK
+6,A,2026-05-11 20:45:32,cocktail,singleList,int,random,10000,50,156028,159970.48,167807,OK
+7,A,2026-05-11 20:46:29,cocktail,singleList,int,random,25000,50,1082248,1126753.44,1421759,OK
+8,A,2026-05-11 20:50:38,cocktail,singleList,int,random,50000,50,4437247,4975341.42,7575448,OK
+9,A,2026-05-11 20:50:38,merge,array,int,random,5000,50,1065,1418.6,5114,OK
+10,A,2026-05-11 20:50:38,merge,array,int,random,10000,50,2306,2792.2,6513,OK
+11,A,2026-05-11 20:50:38,merge,array,int,random,25000,50,6366,7649.94,10991,OK
+12,A,2026-05-11 20:50:40,merge,array,int,random,50000,50,13195,17923.3,41499,OK
+13,A,2026-05-11 20:50:40,merge,singleList,int,random,5000,50,740,967.32,3414,OK
+14,A,2026-05-11 20:50:40,merge,singleList,int,random,10000,50,1639,2139.36,3088,OK
+15,A,2026-05-11 20:50:41,merge,singleList,int,random,25000,50,5038,7023.76,20209,OK
+16,A,2026-05-11 20:50:42,merge,singleList,int,random,50000,50,9133,18292.06,100426,OK
+17,A,2026-05-11 20:50:44,insertion,array,int,random,5000,50,32608,34486.62,39518,OK
+18,A,2026-05-11 20:50:50,insertion,array,int,random,10000,50,121210,130260.08,157428,OK
+19,A,2026-05-11 20:51:27,insertion,array,int,random,25000,50,647881,738587.0,856527,OK
+20,A,2026-05-11 20:53:43,insertion,array,int,random,50000,50,2576810,2703807.76,2915133,OK
+21,A,2026-05-11 20:53:43,insertion,singleList,int,random,5000,50,8813,9024.06,9814,OK
+22,A,2026-05-11 20:53:45,insertion,singleList,int,random,10000,50,39704,42301.42,96177,OK
+23,A,2026-05-11 20:54:15,insertion,singleList,int,random,25000,50,564377,597466.82,649092,OK
+24,A,2026-05-11 20:56:51,insertion,singleList,int,random,50000,50,2980966,3098944.34,3684913,OK
