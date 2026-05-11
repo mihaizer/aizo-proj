@@ -1,0 +1,9 @@
+timestamp,algorithm,structure,data_type,distribution,size,iterations,iteration_id,duration_us,min_us,avg_us,max_us
+2026-05-12 01:50:07,cocktail,singleList,int,random,100,1,1,800,,,
+2026-05-12 01:50:07,cocktail,singleList,int,random,200,1,1,5303,,,
+2026-05-12 01:50:07,cocktail,singleList,int,random,500,1,1,78156,,,
+2026-05-12 01:50:08,cocktail,singleList,int,random,1000,1,1,622921,,,
+2026-05-12 01:50:13,cocktail,singleList,int,random,2000,1,1,4856151,,,
+2026-05-12 01:50:29,cocktail,singleList,int,random,3000,1,1,16567491,,,
+2026-05-12 01:51:09,cocktail,singleList,int,random,4000,1,1,39776040,,,
+2026-05-12 01:52:26,cocktail,singleList,int,random,5000,1,1,76772161,,,

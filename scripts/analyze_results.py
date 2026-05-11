@@ -228,8 +228,6 @@ def create_badanie_a_plot(records, structure, output_path):
 def create_badanie_b_plot(records, structure, output_path):
     distribution_order = ["random", "ascending", "ascending50Per", "descending"]
     values = []
-    lower_errors = []
-    upper_errors = []
     for distribution in distribution_order:
         match = next(
             record
@@ -237,8 +235,6 @@ def create_badanie_b_plot(records, structure, output_path):
             if record["structure"] == structure and record["distribution"] == distribution
         )
         values.append(match["avg_us"])
-        lower_errors.append(match["avg_us"] - match["min_us"])
-        upper_errors.append(match["max_us"] - match["avg_us"])
 
     fig, ax = plt.subplots(figsize=(9, 5))
     positions = list(range(len(distribution_order)))
@@ -247,10 +243,6 @@ def create_badanie_b_plot(records, structure, output_path):
         values,
         color=["#2563eb", "#16a34a", "#d97706", "#dc2626"],
         edgecolor="#1f2937",
-        yerr=[lower_errors, upper_errors],
-        capsize=6,
-        ecolor=(0, 0, 0, 0.75),
-        error_kw={"elinewidth": 1.8, "capthick": 1.8},
     )
     ax.set_title(f"Badanie B - MergeSort / {STRUCTURE_LABELS[structure]}")
     ax.set_xlabel("rozklad danych")
@@ -268,13 +260,9 @@ def create_badanie_b_plot(records, structure, output_path):
 def create_badanie_c_plot(records, output_path):
     type_order = ["int", "float", "unsigned_int"]
     values = []
-    lower_errors = []
-    upper_errors = []
     for data_type in type_order:
         match = next(record for record in records if record["data_type"] == data_type)
         values.append(match["avg_us"])
-        lower_errors.append(match["avg_us"] - match["min_us"])
-        upper_errors.append(match["max_us"] - match["avg_us"])
 
     fig, ax = plt.subplots(figsize=(8, 5))
     positions = list(range(len(type_order)))
@@ -283,10 +271,6 @@ def create_badanie_c_plot(records, output_path):
         values,
         color=["#0f766e", "#7c3aed", "#b91c1c"],
         edgecolor="#1f2937",
-        yerr=[lower_errors, upper_errors],
-        capsize=6,
-        ecolor=(0, 0, 0, 0.75),
-        error_kw={"elinewidth": 1.8, "capthick": 1.8},
     )
     ax.set_title("Badanie C - MergeSort / DynamicArray / 25000")
     ax.set_xlabel("typ danych")

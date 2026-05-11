@@ -9,13 +9,6 @@ template <typename T>
 // Specjalna wersja sprawdzania posortowania dla listy jednokierunkowej.
 bool isSortedAscending(const SinglyLinkedList<T> &values);
 
-namespace CocktailSort
-{
-template <typename T>
-// Pomocnik z dostepem friend dla wersji CocktailSort przeznaczonej dla listy.
-struct SinglyLinkedListAccess;
-}
-
 namespace InsertionSort
 {
 template <typename T>
@@ -55,7 +48,6 @@ private:
     const Node *nodeAt(int index) const;
 
     // Umozliwia helperom sortowania i funkcji walidujacej bezposredni dostep do wnetrza listy.
-    friend struct CocktailSort::SinglyLinkedListAccess<T>;
     friend struct InsertionSort::SinglyLinkedListAccess<T>;
     friend struct MergeSort::SinglyLinkedListAccess<T>;
     friend bool isSortedAscending<T>(const SinglyLinkedList<T> &values);

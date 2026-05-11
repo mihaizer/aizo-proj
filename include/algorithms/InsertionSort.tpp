@@ -3,7 +3,7 @@
 namespace InsertionSort
 {
 template <typename T>
-void sort(IStructure<T> &values)
+void sort(DynamicArray<T> &values)
 {
     // Sortowanie przez wstawianie buduje posortowany prefiks po lewej stronie tablicy.
     for (int index = 1; index < values.size(); index++)
@@ -29,12 +29,18 @@ private:
     using List = SinglyLinkedList<T>;
     using Node = typename SinglyLinkedList<T>::Node;
 
-    static void insertSorted(Node *&sortedHead, Node *node)
+    static void insertSorted(Node *&sortedHead, Node *&sortedTail, Node *node)
     {
+        node->next = nullptr;
+
         if (sortedHead == nullptr || node->value < sortedHead->value)
         {
             node->next = sortedHead;
             sortedHead = node;
+            if (sortedTail == nullptr)
+            {
+                sortedTail = node;
+            }
             return;
         }
 
@@ -46,34 +52,28 @@ private:
 
         node->next = current->next;
         current->next = node;
-    }
-
-    static Node *findTail(Node *start)
-    {
-        Node *current = start;
-        while (current != nullptr && current->next != nullptr)
+        if (node->next == nullptr)
         {
-            current = current->next;
+            sortedTail = node;
         }
-
-        return current;
     }
 
 public:
     static void sort(List &values)
     {
         Node *sortedHead = nullptr;
+        Node *sortedTail = nullptr;
         Node *current = values.head;
 
         while (current != nullptr)
         {
             Node *next = current->next;
-            insertSorted(sortedHead, current);
+            insertSorted(sortedHead, sortedTail, current);
             current = next;
         }
 
         values.head = sortedHead;
-        values.tail = findTail(values.head);
+        values.tail = sortedTail;
     }
 };
 

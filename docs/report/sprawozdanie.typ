@@ -91,25 +91,25 @@ Z punktu widzenia algorytmów najważniejsze jest to, że `DynamicArray` oferuje
 
 `SinglyLinkedList<T>` przechowuje elementy w węzłach `Node`, z których każdy zawiera wartość `value` i wskaźnik `next` na kolejny węzeł. Struktura posiada wskaźniki `head` i `tail`, dzięki czemu zna początek i koniec listy, a także pole `currentSize`, które przechowuje liczbę elementów. Publiczne operacje obejmują `pushBack()`, `size()`, `operator[]` oraz `swap(i, j)`. W części prywatnej znajdują się też metody pomocnicze `clear()`, `copyFrom()` i `nodeAt(index)`.
 
-W praktyce ta struktura jest używana inaczej niż `DynamicArray`. Dla listy nie opłaca się opierać sortowania na ciągłym korzystaniu z `operator[]`, dlatego dla części algorytmów przygotowano osobne implementacje. `CocktailSort` dla `SinglyLinkedList` najpierw tworzy tablicę wskaźników do węzłów, `MergeSort` dzieli i scala listę przez przepinanie `next`, a `InsertionSort` buduje nową uporządkowaną część listy przez wstawianie węzłów we właściwe miejsce. Dzięki temu algorytmy pracują zgodnie z naturą listy jednokierunkowej, zamiast udawać tablicę [2][5].
+W praktyce ta struktura jest używana inaczej niż `DynamicArray`. `MergeSort` i `InsertionSort` dla `SinglyLinkedList` zostały przygotowane w wersjach pracujących bezpośrednio na węzłach i wskaźnikach `next`. Dzięki temu lista jest sortowana zgodnie ze swoją naturą, a nie przez ciągłe udawanie tablicy [2][5].
 
 == Algorytm CocktailSort
 
 `CocktailSort` wykonuje dwa przejścia w obrębie aktualnego zakresu danych: najpierw od lewej do prawej, przesuwając większe elementy ku końcowi, a następnie od prawej do lewej, przesuwając mniejsze elementy ku początkowi. Dla `DynamicArray` algorytm korzysta bezpośrednio z `operator[]` i `swap()`.
 
-Dla `SinglyLinkedList` przygotowano osobną implementację. Zamiast wielokrotnie wywoływać `nodeAt(index)` przez `operator[]`, algorytm najpierw buduje tymczasową tablicę wskaźników do kolejnych węzłów listy. Następnie porównuje i zamienia wartości węzłów, przechodząc po tej tablicy wskaźników. Gdyby wykorzystać listę wyłącznie przez `operator[]`, pojedynczy dostęp miałby koszt liniowy, a całe sortowanie otrzymałoby bardzo duży dodatkowy narzut, praktycznie zbliżający się do zachowania sześciennie rosnącego względem rozmiaru wejścia. Osobna implementacja ogranicza ten problem i zachowuje naturalny dla `CocktailSort` charakter kwadratowy [3][5].
+Dla `SinglyLinkedList` nie przygotowano pełnej listowej wersji tego algorytmu. `CocktailSort` wymaga przejść w obie strony, a lista jednokierunkowa nie pozwala wygodnie wracać do poprzednich elementów. Z tego powodu w obecnej wersji programu dla `SinglyLinkedList` pozostawiono tylko wolny fallback przez `operator[]` z interfejsu `IStructure<T>`. Taki wariant jest poprawny, ale przy większych rozmiarach danych staje się bardzo kosztowny. Sam `CocktailSort` ma złożoność `O(n^2)`, a pojedynczy dostęp do elementu listy przez indeks kosztuje `O(n)`, więc w praktyce taka kombinacja zbliża się do `O(n^3)`. Dla rozmiarów rzędu `10000` i większych taki benchmark staje się już mało praktyczny na zwykłym komputerze [3][5].
 
 == Algorytm MergeSort
 
 `MergeSort` działa według schematu dziel i zwyciężaj. Dla `DynamicArray` algorytm rekurencyjnie dzieli zakres indeksów na dwie połowy, sortuje każdą z nich, a następnie scala obie uporządkowane części. W czasie scalania używany jest jeden dodatkowy bufor pomocniczy, czyli tymczasowa tablica `buffer`, do której przepisywane są elementy w trakcie łączenia dwóch posortowanych fragmentów. Bufor ten jest alokowany tylko raz dla całego sortowania, a nie przy każdym poziomie rekurencji [1][5].
 
-Dla `SinglyLinkedList` zastosowano osobną implementację opartą na wskaźnikach. Lista jest dzielona na dwie połowy metodą szybkiego i wolnego wskaźnika, a następnie scalana przez przepinanie pól `next`, bez kopiowania całej listy do osobnej struktury i bez używania `operator[]`. Taki wariant lepiej odpowiada właściwościom listy jednokierunkowej i pozwala utrzymać oczekiwaną złożoność `O(n log n)` [1][2][5].
+Dla `SinglyLinkedList` zastosowano osobną implementację opartą na wskaźnikach. Lista jest dzielona na dwie połowy metodą szybkiego i wolnego wskaźnika, a następnie scalana przez przepinanie pól `next`. Implementacja zwraca przy tym od razu nowy `head` i `tail`, dzięki czemu nie trzeba na końcu ponownie przechodzić całej listy. Taki wariant dobrze pasuje do listy jednokierunkowej i pozwala utrzymać oczekiwaną złożoność `O(n log n)` [1][2][5].
 
 == Algorytm InsertionSort
 
 `InsertionSort` przetwarza dane od lewej do prawej. W każdej iteracji pobiera bieżący element, porównuje go z elementami poprzedzającymi i przesuwa większe wartości o jedno miejsce w prawo, aż znajdzie pozycję, w którą można wstawić rozpatrywany element. Dla `DynamicArray` operacja ta jest realizowana bezpośrednio na indeksach tablicy [1][5].
 
-Dla `SinglyLinkedList` zastosowano drugą wersję algorytmu. Zamiast próbować przesuwać elementy przez kosztowny dostęp indeksowy, implementacja buduje nową uporządkowaną część listy. Kolejne węzły są wyjmowane z listy wejściowej i wstawiane w odpowiednie miejsce już posortowanej części. Dzięki temu algorytm korzysta z naturalnych operacji listowych i nie opiera się na `operator[]` [2][5].
+Dla `SinglyLinkedList` zastosowano osobną wersję algorytmu pracującą bezpośrednio na węzłach. Kolejne elementy są wyjmowane z listy wejściowej i wstawiane we właściwe miejsce nowej uporządkowanej części przez zmianę wskaźników `next`. Po zakończeniu aktualizowane są również `head` i `tail` listy. Dzięki temu implementacja nie korzysta z `operator[]` i lepiej odpowiada tej strukturze danych [2][5].
 
 
 = Wyniki badań
@@ -269,7 +269,7 @@ Badanie C pokazuje wpływ typu danych przy stałym algorytmie, strukturze i rozm
 
 Najważniejszy wniosek z przeprowadzonych eksperymentów jest taki, że `MergeSort` wyraźnie dominuje przy większych rozmiarach danych. Już w badaniu A widać, że przy `50000` elementów różnica pomiędzy `MergeSort` a pozostałymi algorytmami nie jest kosmetyczna, lecz bardzo duża. Oznacza to, że przy większych wejściach przewaga złożoności `O(n log n)` przekłada się bezpośrednio na praktyczny czas działania.
 
-Drugi istotny wniosek dotyczy samej struktury danych i sposobu implementacji. `SinglyLinkedList` wymagała osobnych wersji części algorytmów, ponieważ prosty dostęp indeksowy nie odpowiada naturze listy jednokierunkowej. Wyniki pokazują więc nie tylko różnice między teorią poszczególnych algorytmów, lecz także to, że dobór sposobu implementacji do właściwości struktury danych ma realny wpływ na końcowy rezultat.
+Drugi istotny wniosek dotyczy samej struktury danych i sposobu implementacji. `MergeSort` i `InsertionSort` można było dobrze dopasować do `SinglyLinkedList`, ponieważ oba algorytmy da się oprzeć na pracy na samych węzłach i wskaźnikach `next`. `CocktailSort` jest pod tym względem dużo mniej wygodny dla listy jednokierunkowej, dlatego jego uczciwa wersja przez `operator[]` szybko staje się zbyt wolna dla większych danych.
 
 Trzeci wniosek płynący z badań B i C jest bardziej praktyczny. Zmiana rozkładu wejścia lub prostego typu liczbowego wpływa na wyniki, ale wpływ ten jest słabszy niż zmiana samego algorytmu. W badanym zakresie to właśnie wybór algorytmu i dopasowanie go do struktury danych okazały się najważniejsze dla osiągnięcia dobrych czasów sortowania.
 

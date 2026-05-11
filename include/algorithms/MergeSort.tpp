@@ -84,6 +84,12 @@ private:
     using List = SinglyLinkedList<T>;
     using Node = typename SinglyLinkedList<T>::Node;
 
+    struct Chain
+    {
+        Node *head;
+        Node *tail;
+    };
+
     static Node *split(Node *start)
     {
         Node *slow = start;
@@ -101,82 +107,71 @@ private:
         return right;
     }
 
-    static void appendNode(Node *&result, Node *&tail, Node *node)
+    static void appendNode(Chain &result, Node *node)
     {
         node->next = nullptr;
 
-        if (result == nullptr)
+        if (result.head == nullptr)
         {
-            result = node;
-            tail = node;
+            result.head = node;
+            result.tail = node;
             return;
         }
 
-        tail->next = node;
-        tail = node;
+        result.tail->next = node;
+        result.tail = node;
     }
 
-    static Node *merge(Node *left, Node *right)
+    static Chain merge(Chain left, Chain right)
     {
-        Node *result = nullptr;
-        Node *tail = nullptr;
+        Chain result{nullptr, nullptr};
+        Node *leftCurrent = left.head;
+        Node *rightCurrent = right.head;
 
-        while (left != nullptr && right != nullptr)
+        while (leftCurrent != nullptr && rightCurrent != nullptr)
         {
             Node *selected = nullptr;
 
             // Tak jak w tablicy, rowne wartosci zostaja w swojej kolejnosci z lewej czesci.
-            if (!(right->value < left->value))
+            if (!(rightCurrent->value < leftCurrent->value))
             {
-                selected = left;
-                left = left->next;
+                selected = leftCurrent;
+                leftCurrent = leftCurrent->next;
             }
             else
             {
-                selected = right;
-                right = right->next;
+                selected = rightCurrent;
+                rightCurrent = rightCurrent->next;
             }
 
-            appendNode(result, tail, selected);
+            appendNode(result, selected);
         }
 
-        Node *rest = (left != nullptr) ? left : right;
-        if (tail == nullptr)
+        Chain rest = (leftCurrent != nullptr) ? Chain{leftCurrent, left.tail} : Chain{rightCurrent, right.tail};
+        if (result.head == nullptr)
         {
             return rest;
         }
 
-        tail->next = rest;
+        result.tail->next = rest.head;
+        if (rest.tail != nullptr)
+        {
+            result.tail = rest.tail;
+        }
         return result;
     }
 
-    static Node *mergeSortNodes(Node *start)
+    static Chain mergeSortNodes(Node *start)
     {
         if (start == nullptr || start->next == nullptr)
         {
-            return start;
+            return Chain{start, start};
         }
 
         Node *right = split(start);
-        Node *leftSorted = mergeSortNodes(start);
-        Node *rightSorted = mergeSortNodes(right);
+        Chain leftSorted = mergeSortNodes(start);
+        Chain rightSorted = mergeSortNodes(right);
         return merge(leftSorted, rightSorted);
-    }
-
-    static Node *findTail(Node *start)
-    {
-        if (start == nullptr)
-        {
-            return nullptr;
-        }
-
-        Node *current = start;
-        while (current->next != nullptr)
-        {
-            current = current->next;
-        }
-
-        return current;
     }
 
 public:
@@ -188,8 +183,9 @@ public:
         }
 
         // Lista jest sortowana przez przepinanie next, bez wolnego dostepu values[index].
-        values.head = mergeSortNodes(values.head);
-        values.tail = findTail(values.head);
+        Chain sorted = mergeSortNodes(values.head);
+        values.head = sorted.head;
+        values.tail = sorted.tail;
     }
 };
 
