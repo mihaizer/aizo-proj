@@ -52,11 +52,30 @@
 
 = Wstęp
 
-Celem projektu było zaimplementowanie programu sortującego dane rosnąco oraz przeprowadzenie pomiarów czasu działania dla zakresu wymaganego na ocenę 3.0. Wymagany zakres obejmował trzy algorytmy sortowania: `CocktailSort`, `MergeSort` i `InsertionSort`, a także dwie własne struktury liniowe: `DynamicArray` oraz `SinglyLinkedList`. Oprócz samego sortowania program miał również sprawdzać poprawność wyniku, walidować parametry wejściowe oraz zapisywać wyniki pomiarów do pliku CSV.
+Celem projektu było zaimplementowanie programu sortującego dane rosnąco oraz przeprowadzenie analizy czasu działania wybranych algorytmów sortowania.
 
-Część eksperymentalna została podzielona na trzy główne badania. `Badanie A` dotyczy wpływu liczebności zbioru i obejmuje wszystkie kombinacje trzech algorytmów, dwóch struktur i czterech rozmiarów wejścia. `Badanie B` dotyczy wpływu rozkładu danych wejściowych i obejmuje osiem benchmarków dla `MergeSort` wykonanych na obu strukturach oraz dla czterech rozkładów danych. `Badanie C` dotyczy wpływu typu danych i obejmuje trzy benchmarki dla `MergeSort`, struktury `DynamicArray`, rozmiaru `25000` i typów `int`, `float` oraz `unsigned int`.
+W zakresie wymaganym na ocenę `3.0` zaimplementowano algorytmy `CocktailSort`, `MergeSort` i `InsertionSort` oraz dwie własne struktury liniowe: `DynamicArray` i `SinglyLinkedList`. Program oprócz samego sortowania sprawdza poprawność wyniku i zapisuje wyniki pomiarów do pliku CSV.
 
-W interpretacji wyników korzystano z klasycznych pojęć złożoności obliczeniowej `O(n^2)` oraz `O(n log n)` opisanych w literaturze algorytmicznej [1][4][5]. Program uruchamiano na komputerze MacBook Air M1 z 8 GB pamięci RAM. Dane eksperymentalne pochodzą z pliku `results/research_data.csv`, który zawiera 35 benchmarków, a każdy benchmark składa się z 50 iteracji.
+Część eksperymentalna obejmuje trzy części: `Badanie A`, `Badanie B` i `Badanie C`. Ich szczegółowy układ oraz sposób interpretacji wyników zostały opisane w rozdziale `Metodyka badań`.
+
+Program uruchamiano na komputerze `MacBook Air M1` z `8 GB RAM`. Dane eksperymentalne pochodzą z pliku `results/research_data.csv`.
+
+
+= Metodyka badań
+
+Eksperyment został podzielony na trzy części: `Badanie A`, `Badanie B` i `Badanie C`. Każdy benchmark wykonano 50 razy.
+
+W pliku CSV zapisano surowy czas każdej iteracji. Wartości `min_us`, `avg_us` i `max_us` pojawiają się tylko w ostatnim wierszu danego bloku 50 iteracji.
+
+Rozkład benchmarków pomiędzy główne badania był następujący:
+
+- `Badanie A` obejmuje 24 benchmarki:
+  każda kombinacja `CocktailSort`, `MergeSort`, `InsertionSort` z `DynamicArray` i `SinglyLinkedList` dla rozmiarów `5000`, `10000`, `25000` i `50000`.
+- `Badanie B` obejmuje 8 benchmarków:
+  `MergeSort` dla `DynamicArray` i `SinglyLinkedList`, a dla każdej struktury rozkłady `random`, `ascending`, `ascending50Per` i `descending`.
+- `Badanie C` obejmuje 3 benchmarki:
+  `MergeSort` dla `DynamicArray` i rozmiaru `25000` przy typach `int`, `float` i `unsigned int`.
+
 
 = Opis implementacji
 
@@ -66,13 +85,13 @@ Implementacja używa szablonów, dzięki czemu te same algorytmy mogą pracować
 
 `DynamicArray<T>` przechowuje dane w ręcznie zarządzanym buforze pamięci `data`, a dodatkowo zapisuje `currentSize` oraz `capacity`. Struktura udostępnia dostęp indeksowy przez `operator[]`, zwraca bieżącą liczbę elementów przez `size()`, pozwala dopisać element na koniec przez `pushBack()` i zamieniać miejscami dwa elementy przez `swap(i, j)`. Dodatkowo posiada konstruktor kopiujący, operator przypisania oraz destruktor, które odpowiadają za poprawne zarządzanie pamięcią.
 
-Z punktu widzenia algorytmów najważniejsze jest to, że `DynamicArray` oferuje szybki dostęp do elementu o zadanym indeksie. Dzięki temu klasyczne wersje `CocktailSort`, `MergeSort` i `InsertionSort` mogą korzystać z indeksów bez dodatkowego narzutu związanego z przechodzeniem po strukturze [2][5].
+Z punktu widzenia algorytmów najważniejsze jest to, że `DynamicArray` oferuje szybki dostęp do elementu o zadanym indeksie. Dzięki temu klasyczne wersje `CocktailSort`, `MergeSort` i `InsertionSort` są szybkie.
 
 == Struktura SinglyLinkedList
 
 `SinglyLinkedList<T>` przechowuje elementy w węzłach `Node`, z których każdy zawiera wartość `value` i wskaźnik `next` na kolejny węzeł. Struktura posiada wskaźniki `head` i `tail`, dzięki czemu zna początek i koniec listy, a także pole `currentSize`, które przechowuje liczbę elementów. Publiczne operacje obejmują `pushBack()`, `size()`, `operator[]` oraz `swap(i, j)`. W części prywatnej znajdują się też metody pomocnicze `clear()`, `copyFrom()` i `nodeAt(index)`.
 
-W przeciwieństwie do `DynamicArray`, dostęp do elementu o indeksie `i` nie jest tutaj bezpośredni. Metoda `operator[]` wykorzystuje funkcję `nodeAt(index)`, która przechodzi liniowo od `head` do żądanego węzła. Z tego powodu nie wszystkie algorytmy powinny używać listy przez `operator[]`, bo przy dużej liczbie odwołań indeksowych koszt wykonania wzrasta bardzo wyraźnie [2][5].
+W praktyce ta struktura jest używana inaczej niż `DynamicArray`. Dla listy nie opłaca się opierać sortowania na ciągłym korzystaniu z `operator[]`, dlatego dla części algorytmów przygotowano osobne implementacje. `CocktailSort` dla `SinglyLinkedList` najpierw tworzy tablicę wskaźników do węzłów, `MergeSort` dzieli i scala listę przez przepinanie `next`, a `InsertionSort` buduje nową uporządkowaną część listy przez wstawianie węzłów we właściwe miejsce. Dzięki temu algorytmy pracują zgodnie z naturą listy jednokierunkowej, zamiast udawać tablicę [2][5].
 
 == Algorytm CocktailSort
 
@@ -92,20 +111,6 @@ Dla `SinglyLinkedList` zastosowano osobną implementację opartą na wskaźnikac
 
 Dla `SinglyLinkedList` zastosowano drugą wersję algorytmu. Zamiast próbować przesuwać elementy przez kosztowny dostęp indeksowy, implementacja buduje nową uporządkowaną część listy. Kolejne węzły są wyjmowane z listy wejściowej i wstawiane w odpowiednie miejsce już posortowanej części. Dzięki temu algorytm korzysta z naturalnych operacji listowych i nie opiera się na `operator[]` [2][5].
 
-= Metodyka badań
-
-W niniejszym sprawozdaniu termin `główne badanie` odnosi się do trzech części eksperymentu opisanych w treści zadania: `Badanie A`, `Badanie B` i `Badanie C`. Wewnątrz każdego głównego badania wykonywano pojedyncze benchmarki, czyli uruchomienia programu z ustalonym zestawem parametrów: algorytmem, strukturą danych, typem danych, rozkładem wejścia i rozmiarem zbioru. Każdy benchmark był następnie powtarzany 50 razy. Jedno takie powtórzenie jest w tym sprawozdaniu nazywane `iteracją`.
-
-W pliku CSV zapisano surowy czas każdej iteracji. Ostatni wiersz każdego bloku 50 iteracji zawiera wartości `min_us`, `avg_us` i `max_us`, obliczone dla danego benchmarku. Analiza wyników została wykonana blokami po 50 wierszy, zgodnie z kolejnością uruchamiania benchmarków w skrypcie badań. Taki sposób interpretacji jest konieczny, ponieważ część benchmarków z różnych głównych badań ma identyczne parametry logiczne, ale należy do innych części eksperymentu.
-
-Rozkład benchmarków pomiędzy główne badania był następujący:
-
-- `Badanie A` obejmuje 24 benchmarki:
-  każda kombinacja `CocktailSort`, `MergeSort`, `InsertionSort` z `DynamicArray` i `SinglyLinkedList` dla rozmiarów `5000`, `10000`, `25000` i `50000`.
-- `Badanie B` obejmuje 8 benchmarków:
-  `MergeSort` dla `DynamicArray` i `SinglyLinkedList`, a dla każdej struktury rozkłady `random`, `ascending`, `ascending50Per` i `descending`.
-- `Badanie C` obejmuje 3 benchmarki:
-  `MergeSort` dla `DynamicArray` i rozmiaru `25000` przy typach `int`, `float` i `unsigned int`.
 
 = Wyniki badań
 
@@ -200,7 +205,12 @@ Badanie B dotyczy wpływu rozkładu danych wejściowych. W tej części wykonano
       [DynamicArray], [descending], [#summary-row(28).min-us], [#summary-row(28).avg-us], [#summary-row(28).max-us],
       [SinglyLinkedList], [random], [#summary-row(29).min-us], [#summary-row(29).avg-us], [#summary-row(29).max-us],
       [SinglyLinkedList], [ascending], [#summary-row(30).min-us], [#summary-row(30).avg-us], [#summary-row(30).max-us],
-      [SinglyLinkedList], [ascending50Per], [#summary-row(31).min-us], [#summary-row(31).avg-us], [#summary-row(31).max-us],
+      [SinglyLinkedList],
+      [ascending50Per],
+      [#summary-row(31).min-us],
+      [#summary-row(31).avg-us],
+      [#summary-row(31).max-us],
+
       [SinglyLinkedList], [descending], [#summary-row(32).min-us], [#summary-row(32).avg-us], [#summary-row(32).max-us],
     )
   ],
@@ -241,15 +251,25 @@ Badanie C analizuje wpływ typu danych przy zachowaniu tego samego algorytmu, te
 
 = Analiza wyników
 
-W analizie wyników warto rozdzielić dwie grupy algorytmów. `CocktailSort` oraz `InsertionSort` należą tutaj do algorytmów o dominującym zachowaniu kwadratowym `O(n^2)`, natomiast `MergeSort` zachowuje złożoność `O(n log n)` [1][4][5]. Tę różnicę widać bezpośrednio w badaniu A: wraz ze wzrostem rozmiaru wejścia czasy `CocktailSort` i `InsertionSort` rosną znacznie szybciej niż czasy `MergeSort`.
+W analizie wyników warto rozdzielić dwie grupy algorytmów. `CocktailSort` oraz `InsertionSort` należą tutaj do algorytmów o dominującym zachowaniu kwadratowym `O(n^2)`, natomiast `MergeSort` zachowuje złożoność `O(n log n)` [1][4][5]. Ta różnica jest widoczna we wszystkich trzech głównych badaniach, ale każde z nich pokazuje ją z innej strony.
+
+== Badanie A
+
+Badanie A pokazuje przede wszystkim wpływ liczebności zbioru. Wraz ze wzrostem rozmiaru wejścia czasy `CocktailSort` i `InsertionSort` rosną znacznie szybciej niż czasy `MergeSort`. Najmocniej widać to przy `50000` elementów, gdzie `MergeSort` pozostaje wyraźnie szybszy zarówno dla `DynamicArray`, jak i dla `SinglyLinkedList`.
 
 Na poziomie implementacji taki wynik jest w pełni uzasadniony. `MergeSort` dla `DynamicArray` wykonuje podział zakresu i scalanie uporządkowanych fragmentów z użyciem jednego dodatkowego bufora, czyli tymczasowej tablicy pomocniczej. Dla `SinglyLinkedList` ten sam algorytm nie wykonuje kosztownego dostępu indeksowego, lecz dzieli listę na połowy i scala ją przez przepinanie wskaźników `next`. Dzięki temu obie wersje zachowują się zgodnie z oczekiwaną teorią [1][2][5].
 
 `CocktailSort` oraz `InsertionSort` są znacznie bardziej wrażliwe na wzrost liczby elementów. W przypadku `SinglyLinkedList` autor implementacji musiał dodatkowo uważać na koszt dostępu do elementu pod indeksem. Z tego powodu `CocktailSort` otrzymał osobną wersję wykorzystującą tablicę wskaźników do węzłów, a `InsertionSort` osobną wersję budującą uporządkowaną część listy przez wstawianie węzłów we właściwe miejsce. Bez takich zmian wykorzystanie samego `operator[]` prowadziłoby do bardzo dużego dodatkowego narzutu [2][5].
 
+== Badanie B
+
 W badaniu B rozkład danych nie zmienia jakościowo zachowania `MergeSort`, ale wpływa na konkretne czasy wykonania. W szczególności przypadek `ascending50Per` bywa wolniejszy od `descending`, mimo że oba należą do tego samego głównego badania. Wynika to z tego, że dane `ascending50Per` nie są całkowicie uporządkowane: połowa wejścia jest posortowana, a reszta pozostaje losowa. Przy scalaniu takich fragmentów algorytm wykonuje więcej nieregularnych porównań niż w bardziej regularnym przypadku całkowicie malejącym. Wpływ mają tu również szczegóły implementacyjne i lokalność pamięci [1][5].
 
-W badaniu C różnice pomiędzy `int`, `float` i `unsigned int` są zauważalne, ale dużo mniejsze niż różnice wynikające ze zmiany algorytmu w badaniu A. Oznacza to, że w tej konfiguracji koszt sortowania jest zdominowany głównie przez liczbę wykonywanych operacji oraz sposób organizacji struktury danych, a nie przez sam wybór jednego z trzech prostych typów liczbowych [1][4][5].
+== Badanie C
+
+Badanie C pokazuje wpływ typu danych przy stałym algorytmie, stałej strukturze i stałym rozmiarze wejścia. Dla `MergeSort` i `DynamicArray` średnie czasy dla `int`, `float` i `unsigned int` różnią się, ale te różnice są dużo mniejsze niż te, które w badaniu A wynikały ze zmiany algorytmu. Innymi słowy, przy tej konfiguracji ważniejsze jest to, że użyto `MergeSort`, niż to, czy sortowany był `int`, `float` czy `unsigned int`.
+
+Warto też zauważyć, że największy średni czas w badaniu C uzyskał `unsigned int`. Nie oznacza to jednak zmiany klasy złożoności algorytmu. Jest to raczej efekt szczegółów wykonania i konkretnego zestawu danych wylosowanych do benchmarku. Główna obserwacja pozostaje taka sama: wpływ typu danych istnieje, ale jest słabszy niż wpływ wyboru algorytmu i sposobu organizacji struktury [1][4][5].
 
 = Wnioski
 
