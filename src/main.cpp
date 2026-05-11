@@ -2,6 +2,7 @@
 #include <string>
 
 #include "Parameters.h"
+#include "algorithms/CocktailSort.h"
 #include "algorithms/InsertionSort.h"
 #include "io/DataFile.h"
 #include "structures/DynamicArray.h"
@@ -228,15 +229,30 @@ namespace
     template <typename T>
     int sortSingleFileValues(IStructure<T> &values)
     {
-        if (Parameters::algorithm != Parameters::Algorithms::insertion)
+        switch (Parameters::algorithm)
         {
+        case Parameters::Algorithms::cocktail:
+            CocktailSort::sort(values);
+            return 0;
+        case Parameters::Algorithms::insertion:
+            InsertionSort::sort(values);
+            return 0;
+        case Parameters::Algorithms::merge:
             std::cerr << "ERROR: selected algorithm is not connected to singleFile sorting yet.\n";
-            std::cerr << "Implemented now: 3 - Insertion sort.\n";
+            std::cerr << "Implemented now: 1 - Cocktail sort, 3 - Insertion sort.\n";
+            return 1;
+        case Parameters::Algorithms::bubble:
+        case Parameters::Algorithms::bucket:
+        case Parameters::Algorithms::quick:
+        case Parameters::Algorithms::shell:
+        case Parameters::Algorithms::undefined:
+        case Parameters::Algorithms::count:
+            std::cerr << "ERROR: unsupported algorithm.\n";
             return 1;
         }
 
-        InsertionSort::sort(values);
-        return 0;
+        std::cerr << "ERROR: unsupported algorithm.\n";
+        return 1;
     }
 
     template <typename T, typename Structure>
