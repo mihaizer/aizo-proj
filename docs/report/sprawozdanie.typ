@@ -1,4 +1,4 @@
-#import "generated-data.typ": generated-task-summary, generated-cocktail-singlelist-limit
+#import "generated-data.typ": generated-cocktail-singlelist-limit, generated-task-summary
 
 #set page(margin: 2.2cm, paper: "a4")
 #set text(font: "New Computer Modern", size: 11pt, lang: "pl")
@@ -44,17 +44,17 @@
   #text(size: 15pt, weight: "bold")[Sprawozdanie]
   #v(0.5cm)
   #text(size: 13pt)[Zadanie projektowe nr 1]
-  #v(1.2cm)
-  #text(size: 14pt, weight: "bold")[Analiza algorytmów sortowania i wpływu struktury danych na czas wykonania]
+  // #v(1.2cm)
+  // #text(size: 14pt, weight: "bold")[Analiza algorytmów sortowania i wpływu struktury danych na czas wykonania]
   #v(1.4cm)
   #text(size: 12pt)[Mykhailo Tsonyev]
   #text(size: 12pt)[nr albumu 284497]
   #v(0.6cm)
-  #text(size: 11pt)[Prowadzący kurs: ]
+  #text(size: 11pt)[Prowadzący kurs: Damian Mroziński]
   #linebreak()
   #text(size: 11pt)[Termin zajęć: TN wtorek 9:15]
   #linebreak()
-  #text(size: 11pt)[Termin oddania zadania: 12 maja 2026]
+  #text(size: 11pt)[Termin oddania zadania: 12.05.2026]
 ]
 
 #pagebreak()
@@ -214,7 +214,7 @@ Osobno wykonano pojedyncze uruchomienia `CocktailSort` dla `SinglyLinkedList` pr
   caption: [Pojedyncze czasy dla `CocktailSort` i `SinglyLinkedList`.],
 )
 
-Już przy `5000` elementach pojedyncze sortowanie trwało #fmt-avg(scan-row(5000).avg-us), czyli około `#scan-row(5000).wall-time-sec s`. To dobrze pokazuje, dlaczego tej kombinacji nie włączono do głównego zestawu badań.
+Już przy `5000` elementach pojedyncze sortowanie trwało #fmt-avg(scan-row(5000).avg-us), czyli około #scan-row(5000).wall-time-sec s. To dobrze pokazuje, dlaczego tej kombinacji nie włączono do głównego zestawu badań.
 
 == Badanie B
 
@@ -289,29 +289,29 @@ Badanie C analizuje wpływ typu danych przy zachowaniu tego samego algorytmu, te
 
 = Analiza wyników
 
-Wyniki dobrze pokazują różnicę między `MergeSort` a pozostałymi algorytmami. `MergeSort` rośnie dużo łagodniej wraz z rozmiarem danych, a `CocktailSort` i `InsertionSort` dużo szybciej.
+Wyniki pokazują wyraźną różnicę między `MergeSort` a pozostałymi algorytmami. Wraz ze wzrostem rozmiaru danych czas `MergeSort` rośnie znacznie wolniej niż czas `CocktailSort` i `InsertionSort`.
 
 == Badanie A
 
-W badaniu A najlepiej widać wpływ rozmiaru danych. Im większy zbiór, tym większa przewaga `MergeSort`. Dla `DynamicArray` przy `50000` elementów `MergeSort` potrzebował średnio #fmt-avg(summary-row(8).avg-us), `InsertionSort` #fmt-avg(summary-row(16).avg-us), a `CocktailSort` aż #fmt-avg(summary-row(4).avg-us). Dla `SinglyLinkedList` `MergeSort` też wyraźnie wygrywa z `InsertionSort`.
+W badaniu A najwyraźniej widać wpływ rozmiaru danych. Wraz ze wzrostem liczby elementów przewaga `MergeSort` staje się coraz większa. Dla `DynamicArray` przy `50000` elementów średni czas `MergeSort` wyniósł #fmt-avg(summary-row(8).avg-us), podczas gdy `InsertionSort` osiągnął #fmt-avg(summary-row(16).avg-us), a `CocktailSort` #fmt-avg(summary-row(4).avg-us). Dla `SinglyLinkedList` `MergeSort` również pozostaje wyraźnie szybszy od `InsertionSort`.
 
-Dodatkowy test `CocktailSort` dla `SinglyLinkedList` potwierdza, że ta kombinacja nie nadaje się do dużych danych. Już przy `5000` elementach pojedyncze uruchomienie trwało około `#scan-row(5000).wall-time-sec s`, więc dla większych rozmiarów taki benchmark przestaje być praktyczny.
+Dodatkowy test `CocktailSort` dla `SinglyLinkedList` potwierdza, że ta kombinacja nie nadaje się do większych rozmiarów danych. Już przy `5000` elementach pojedyncze uruchomienie trwało około #scan-row(5000).wall-time-sec s, dlatego dalsze zwiększanie rozmiaru wejścia przestaje być praktyczne.
 
 == Badanie B
 
-W badaniu B zmiana rozkładu danych wpływa na wyniki, ale nie zmienia ogólnego obrazu. `MergeSort` pozostaje stabilny, a różnice między `random`, `ascending`, `ascending50Per` i `descending` są dużo mniejsze niż różnice widoczne wcześniej między algorytmami. W obu strukturach najwolniejszy okazał się wariant `random`, a najszybsze były `ascending` i `descending`.
+W badaniu B zmiana rozkładu danych wpływa na wynik, ale nie zmienia ogólnej charakterystyki `MergeSort`. Różnice między `random`, `ascending`, `ascending50Per` i `descending` są znacznie mniejsze niż różnice obserwowane wcześniej między algorytmami. W obu strukturach najwolniejszy okazał się wariant `random`, natomiast najkrótsze czasy uzyskano dla `ascending` i `descending`.
 
 == Badanie C
 
-Badanie C pokazuje wpływ typu danych przy stałym algorytmie, strukturze i rozmiarze wejścia. Wynik dla `float` jest tu najwyższy, a `int` i `unsigned int` wypadają podobnie. Mimo to różnice pozostają dużo mniejsze niż te, które w badaniu A wynikały ze zmiany algorytmu.
+Badanie C pokazuje wpływ typu danych przy stałym algorytmie, strukturze i rozmiarze wejścia. Najwyższy średni czas uzyskano dla typu `float`, natomiast wyniki dla `int` i `unsigned int` są do siebie zbliżone. Różnice te pozostają jednak wyraźnie mniejsze niż różnice wynikające ze zmiany algorytmu w badaniu A.
 
 = Wnioski
 
-Najważniejszy wniosek jest prosty: przy większych danych najlepiej wypada `MergeSort`. W badaniu A jego czasy były wielokrotnie niższe niż czasy `CocktailSort` i `InsertionSort`, szczególnie dla `DynamicArray` przy `25000` i `50000` elementów.
+Przeprowadzone pomiary potwierdzają, że przy większych danych najlepsze wyniki uzyskuje `MergeSort`. W badaniu A jego czasy były wielokrotnie niższe niż czasy `CocktailSort` i `InsertionSort`, szczególnie dla `DynamicArray` przy `25000` i `50000` elementów.
 
-Drugi wniosek dotyczy `SinglyLinkedList`. `MergeSort` i `InsertionSort` dało się zaimplementować w sposób naturalny dla listy, czyli przez pracę na węzłach i wskaźnikach `next`. `CocktailSort` nie pasuje do tej struktury tak dobrze. Uczciwa wersja przez `operator[]` działa poprawnie, ale bardzo szybko robi się zbyt wolna, co potwierdził dodatkowy test.
+Istotne znaczenie miało również dopasowanie algorytmu do struktury danych. `MergeSort` i `InsertionSort` można było zaimplementować dla `SinglyLinkedList` w sposób zgodny z naturą listy, czyli przez pracę na węzłach i wskaźnikach `next`. `CocktailSort` nie jest pod tym względem równie korzystny. Wersja oparta na `operator[]` działa poprawnie, ale bardzo szybko staje się zbyt wolna, co potwierdził dodatkowy test.
 
-Trzeci wniosek jest taki, że rozkład danych i prosty typ liczbowy mają znaczenie, ale mniejsze niż wybór algorytmu. W tym projekcie największy wpływ na wynik miało to, czy użyto `MergeSort`, czy algorytmu o zachowaniu kwadratowym.
+Wpływ rozkładu danych wejściowych oraz prostego typu liczbowego jest zauważalny, ale mniejszy niż wpływ samego algorytmu. W badanym zakresie największe znaczenie dla czasu wykonania miało to, czy zastosowano `MergeSort`, czy algorytm o zachowaniu kwadratowym.
 
 = Literatura
 
