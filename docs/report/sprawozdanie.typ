@@ -1,4 +1,4 @@
-#import "generated-data.typ": generated-task-summary
+#import "generated-data.typ": generated-task-summary, generated-cocktail-singlelist-limit
 
 #set page(margin: 2.2cm, paper: "a4")
 #set text(font: "New Computer Modern", size: 11pt, lang: "pl")
@@ -22,6 +22,15 @@
     }
   }
   panic("Missing generated row for task " + str(task-id))
+}
+
+#let scan-row(size) = {
+  for row in generated-cocktail-singlelist-limit {
+    if row.size == size {
+      return row
+    }
+  }
+  panic("Missing generated scan row for size " + str(size))
 }
 
 #let fmt-us(value) = [#value us]
@@ -58,7 +67,7 @@ W zakresie wymaganym na ocenę `3.0` zaimplementowano algorytmy `CocktailSort`, 
 
 Część eksperymentalna obejmuje trzy części: `Badanie A`, `Badanie B` i `Badanie C`. Ich szczegółowy układ oraz sposób interpretacji wyników zostały opisane w rozdziale `Metodyka badań`.
 
-Program uruchamiano na komputerze `MacBook Air M1` z `8 GB RAM`. Dane eksperymentalne pochodzą z pliku `results/research_data.csv`.
+Program uruchamiano na komputerze `MacBook Air M1` z `8 GB RAM`. Główne wyniki pochodzą z pliku `results/research_data_without_cocktail_singlelist.csv`, a dodatkowy test dla `CocktailSort` i `SinglyLinkedList` z pliku `results/cocktail_singlelist_limit_status.csv`.
 
 
 = Metodyka badań
@@ -69,35 +78,37 @@ W pliku CSV zapisano surowy czas każdej iteracji. Wartości `min_us`, `avg_us` 
 
 Rozkład benchmarków pomiędzy główne badania był następujący:
 
-- `Badanie A` obejmuje 24 benchmarki:
-  każda kombinacja `CocktailSort`, `MergeSort`, `InsertionSort` z `DynamicArray` i `SinglyLinkedList` dla rozmiarów `5000`, `10000`, `25000` i `50000`.
+- `Badanie A` obejmuje 20 benchmarków:
+  `CocktailSort` dla `DynamicArray`, `MergeSort` dla `DynamicArray` i `SinglyLinkedList` oraz `InsertionSort` dla `DynamicArray` i `SinglyLinkedList`, zawsze dla rozmiarów `5000`, `10000`, `25000` i `50000`.
 - `Badanie B` obejmuje 8 benchmarków:
   `MergeSort` dla `DynamicArray` i `SinglyLinkedList`, a dla każdej struktury rozkłady `random`, `ascending`, `ascending50Per` i `descending`.
 - `Badanie C` obejmuje 3 benchmarki:
   `MergeSort` dla `DynamicArray` i rozmiaru `25000` przy typach `int`, `float` i `unsigned int`.
 
+`CocktailSort` dla `SinglyLinkedList` sprawdzono osobno poza głównym zestawem badań. Dla tej kombinacji wykonano pojedyncze uruchomienia dla kilku mniejszych rozmiarów, aby pokazać, jak szybko rośnie czas działania.
+
 
 = Opis implementacji
 
-Implementacja używa szablonów, dzięki czemu te same algorytmy mogą pracować na różnych typach danych bez powielania kodu. Wspólny interfejs struktur zapewnia klasa `IStructure<T>`, która udostępnia metody `size()`, `operator[]`, `pushBack()` oraz `swap()`. Taki układ pozwala stosować te same algorytmy dla tablicy i listy tam, gdzie jest to uzasadnione, a tam, gdzie koszt dostępu indeksowego byłby zbyt duży, przygotować osobną implementację dla `SinglyLinkedList` [2][5].
+Implementacja używa szablonów, dzięki czemu te same algorytmy mogą pracować na różnych typach danych bez powielania kodu. Wspólny interfejs struktur zapewnia klasa `IStructure<T>`, która udostępnia metody `size()`, `operator[]`, `pushBack()` oraz `swap()`. Tam, gdzie to miało sens, wykorzystano wspólny interfejs. Tam, gdzie lista wymagała innego podejścia, przygotowano osobną implementację pracującą bezpośrednio na węzłach [2][5].
 
 == Struktura DynamicArray
 
 `DynamicArray<T>` przechowuje dane w ręcznie zarządzanym buforze pamięci `data`, a dodatkowo zapisuje `currentSize` oraz `capacity`. Struktura udostępnia dostęp indeksowy przez `operator[]`, zwraca bieżącą liczbę elementów przez `size()`, pozwala dopisać element na koniec przez `pushBack()` i zamieniać miejscami dwa elementy przez `swap(i, j)`. Dodatkowo posiada konstruktor kopiujący, operator przypisania oraz destruktor, które odpowiadają za poprawne zarządzanie pamięcią.
 
-Z punktu widzenia algorytmów najważniejsze jest to, że `DynamicArray` oferuje szybki dostęp do elementu o zadanym indeksie. Dzięki temu klasyczne wersje `CocktailSort`, `MergeSort` i `InsertionSort` są szybkie.
+Z punktu widzenia algorytmów najważniejsze jest to, że `DynamicArray` oferuje szybki dostęp do elementu o zadanym indeksie. Dzięki temu klasyczne wersje `CocktailSort`, `MergeSort` i `InsertionSort` działają tutaj bez dodatkowych utrudnień.
 
 == Struktura SinglyLinkedList
 
 `SinglyLinkedList<T>` przechowuje elementy w węzłach `Node`, z których każdy zawiera wartość `value` i wskaźnik `next` na kolejny węzeł. Struktura posiada wskaźniki `head` i `tail`, dzięki czemu zna początek i koniec listy, a także pole `currentSize`, które przechowuje liczbę elementów. Publiczne operacje obejmują `pushBack()`, `size()`, `operator[]` oraz `swap(i, j)`. W części prywatnej znajdują się też metody pomocnicze `clear()`, `copyFrom()` i `nodeAt(index)`.
 
-W praktyce ta struktura jest używana inaczej niż `DynamicArray`. `MergeSort` i `InsertionSort` dla `SinglyLinkedList` zostały przygotowane w wersjach pracujących bezpośrednio na węzłach i wskaźnikach `next`. Dzięki temu lista jest sortowana zgodnie ze swoją naturą, a nie przez ciągłe udawanie tablicy [2][5].
+W praktyce ta struktura jest używana inaczej niż `DynamicArray`. `MergeSort` i `InsertionSort` dla `SinglyLinkedList` pracują bezpośrednio na węzłach i wskaźnikach `next`. Dzięki temu lista jest sortowana zgodnie ze swoją naturą, bez sztucznego udawania tablicy [2][5].
 
 == Algorytm CocktailSort
 
 `CocktailSort` wykonuje dwa przejścia w obrębie aktualnego zakresu danych: najpierw od lewej do prawej, przesuwając większe elementy ku końcowi, a następnie od prawej do lewej, przesuwając mniejsze elementy ku początkowi. Dla `DynamicArray` algorytm korzysta bezpośrednio z `operator[]` i `swap()`.
 
-Dla `SinglyLinkedList` nie przygotowano pełnej listowej wersji tego algorytmu. `CocktailSort` wymaga przejść w obie strony, a lista jednokierunkowa nie pozwala wygodnie wracać do poprzednich elementów. Z tego powodu w obecnej wersji programu dla `SinglyLinkedList` pozostawiono tylko wolny fallback przez `operator[]` z interfejsu `IStructure<T>`. Taki wariant jest poprawny, ale przy większych rozmiarach danych staje się bardzo kosztowny. Sam `CocktailSort` ma złożoność `O(n^2)`, a pojedynczy dostęp do elementu listy przez indeks kosztuje `O(n)`, więc w praktyce taka kombinacja zbliża się do `O(n^3)`. Dla rozmiarów rzędu `10000` i większych taki benchmark staje się już mało praktyczny na zwykłym komputerze [3][5].
+Dla `SinglyLinkedList` nie przygotowano osobnej wersji tego algorytmu. `CocktailSort` wymaga przejść w obie strony, a lista jednokierunkowa nie pozwala wygodnie wracać do poprzednich elementów. Z tego powodu w obecnej wersji programu dla `SinglyLinkedList` pozostawiono tylko fallback przez `operator[]` z interfejsu `IStructure<T>`. Taki wariant jest poprawny, ale bardzo wolny. Sam `CocktailSort` ma złożoność `O(n^2)`, a pojedynczy dostęp do elementu listy przez indeks kosztuje `O(n)`, więc w praktyce ta kombinacja zbliża się do `O(n^3)` [3][5].
 
 == Algorytm MergeSort
 
@@ -116,7 +127,7 @@ Dla `SinglyLinkedList` zastosowano osobną wersję algorytmu pracującą bezpoś
 
 == Badanie A
 
-Badanie A sprawdza wpływ liczebności zbioru na czas działania algorytmów. W tej części wykonano 24 benchmarki, czyli wszystkie kombinacje trzech algorytmów, dwóch struktur i czterech rozmiarów wejścia. Już na poziomie wykresów widać, że `MergeSort` skaluje się znacznie lepiej niż `CocktailSort` i `InsertionSort`, zwłaszcza dla większych rozmiarów danych, co jest zgodne z klasyczną analizą złożoności [1][4][5].
+Badanie A sprawdza wpływ liczebności zbioru na czas działania algorytmów. W tej części wykonano 20 benchmarków. Dla `DynamicArray` porównano `CocktailSort`, `MergeSort` i `InsertionSort`, a dla `SinglyLinkedList` porównano `MergeSort` i `InsertionSort`. `CocktailSort` dla listy został pokazany osobno w dodatkowym teście, ponieważ w uczciwej wersji przez `operator[]` bardzo szybko staje się niepraktyczny.
 
 #figure(
   image("/results/plots/badanie_A_array.png", width: 100%),
@@ -139,14 +150,14 @@ Badanie A sprawdza wpływ liczebności zbioru na czas działania algorytmów. W 
       [CocktailSort], [10000], [#summary-row(2).min-us], [#summary-row(2).avg-us], [#summary-row(2).max-us],
       [CocktailSort], [25000], [#summary-row(3).min-us], [#summary-row(3).avg-us], [#summary-row(3).max-us],
       [CocktailSort], [50000], [#summary-row(4).min-us], [#summary-row(4).avg-us], [#summary-row(4).max-us],
-      [MergeSort], [5000], [#summary-row(9).min-us], [#summary-row(9).avg-us], [#summary-row(9).max-us],
-      [MergeSort], [10000], [#summary-row(10).min-us], [#summary-row(10).avg-us], [#summary-row(10).max-us],
-      [MergeSort], [25000], [#summary-row(11).min-us], [#summary-row(11).avg-us], [#summary-row(11).max-us],
-      [MergeSort], [50000], [#summary-row(12).min-us], [#summary-row(12).avg-us], [#summary-row(12).max-us],
-      [InsertionSort], [5000], [#summary-row(17).min-us], [#summary-row(17).avg-us], [#summary-row(17).max-us],
-      [InsertionSort], [10000], [#summary-row(18).min-us], [#summary-row(18).avg-us], [#summary-row(18).max-us],
-      [InsertionSort], [25000], [#summary-row(19).min-us], [#summary-row(19).avg-us], [#summary-row(19).max-us],
-      [InsertionSort], [50000], [#summary-row(20).min-us], [#summary-row(20).avg-us], [#summary-row(20).max-us],
+      [MergeSort], [5000], [#summary-row(5).min-us], [#summary-row(5).avg-us], [#summary-row(5).max-us],
+      [MergeSort], [10000], [#summary-row(6).min-us], [#summary-row(6).avg-us], [#summary-row(6).max-us],
+      [MergeSort], [25000], [#summary-row(7).min-us], [#summary-row(7).avg-us], [#summary-row(7).max-us],
+      [MergeSort], [50000], [#summary-row(8).min-us], [#summary-row(8).avg-us], [#summary-row(8).max-us],
+      [InsertionSort], [5000], [#summary-row(13).min-us], [#summary-row(13).avg-us], [#summary-row(13).max-us],
+      [InsertionSort], [10000], [#summary-row(14).min-us], [#summary-row(14).avg-us], [#summary-row(14).max-us],
+      [InsertionSort], [25000], [#summary-row(15).min-us], [#summary-row(15).avg-us], [#summary-row(15).max-us],
+      [InsertionSort], [50000], [#summary-row(16).min-us], [#summary-row(16).avg-us], [#summary-row(16).max-us],
     )
   ],
   caption: [Czas sortowania w zależności od liczebności zbioru dla struktury `DynamicArray`.],
@@ -159,28 +170,55 @@ Badanie A sprawdza wpływ liczebności zbioru na czas działania algorytmów. W 
       columns: 5,
       stroke: 0.6pt,
       [Algorytm], [Rozmiar], [Min [us]], [Avg [us]], [Max [us]],
-      [CocktailSort], [5000], [#summary-row(5).min-us], [#summary-row(5).avg-us], [#summary-row(5).max-us],
-      [CocktailSort], [10000], [#summary-row(6).min-us], [#summary-row(6).avg-us], [#summary-row(6).max-us],
-      [CocktailSort], [25000], [#summary-row(7).min-us], [#summary-row(7).avg-us], [#summary-row(7).max-us],
-      [CocktailSort], [50000], [#summary-row(8).min-us], [#summary-row(8).avg-us], [#summary-row(8).max-us],
-      [MergeSort], [5000], [#summary-row(13).min-us], [#summary-row(13).avg-us], [#summary-row(13).max-us],
-      [MergeSort], [10000], [#summary-row(14).min-us], [#summary-row(14).avg-us], [#summary-row(14).max-us],
-      [MergeSort], [25000], [#summary-row(15).min-us], [#summary-row(15).avg-us], [#summary-row(15).max-us],
-      [MergeSort], [50000], [#summary-row(16).min-us], [#summary-row(16).avg-us], [#summary-row(16).max-us],
-      [InsertionSort], [5000], [#summary-row(21).min-us], [#summary-row(21).avg-us], [#summary-row(21).max-us],
-      [InsertionSort], [10000], [#summary-row(22).min-us], [#summary-row(22).avg-us], [#summary-row(22).max-us],
-      [InsertionSort], [25000], [#summary-row(23).min-us], [#summary-row(23).avg-us], [#summary-row(23).max-us],
-      [InsertionSort], [50000], [#summary-row(24).min-us], [#summary-row(24).avg-us], [#summary-row(24).max-us],
+      [MergeSort], [5000], [#summary-row(9).min-us], [#summary-row(9).avg-us], [#summary-row(9).max-us],
+      [MergeSort], [10000], [#summary-row(10).min-us], [#summary-row(10).avg-us], [#summary-row(10).max-us],
+      [MergeSort], [25000], [#summary-row(11).min-us], [#summary-row(11).avg-us], [#summary-row(11).max-us],
+      [MergeSort], [50000], [#summary-row(12).min-us], [#summary-row(12).avg-us], [#summary-row(12).max-us],
+      [InsertionSort], [5000], [#summary-row(17).min-us], [#summary-row(17).avg-us], [#summary-row(17).max-us],
+      [InsertionSort], [10000], [#summary-row(18).min-us], [#summary-row(18).avg-us], [#summary-row(18).max-us],
+      [InsertionSort], [25000], [#summary-row(19).min-us], [#summary-row(19).avg-us], [#summary-row(19).max-us],
+      [InsertionSort], [50000], [#summary-row(20).min-us], [#summary-row(20).avg-us], [#summary-row(20).max-us],
     )
   ],
   caption: [Czas sortowania w zależności od liczebności zbioru dla struktury `SinglyLinkedList`.],
 )
 
-Przykładowo dla `DynamicArray` i rozmiaru `50000` średni czas `MergeSort` wyniósł #fmt-avg(summary-row(12).avg-us), podczas gdy `CocktailSort` osiągnął #fmt-avg(summary-row(4).avg-us), a `InsertionSort` #fmt-avg(summary-row(20).avg-us). Oznacza to bardzo dużą różnicę pomiędzy algorytmem `O(n log n)` a algorytmami o dominującym zachowaniu `O(n^2)` [1][4][5].
+Przykładowo dla `DynamicArray` i rozmiaru `50000` średni czas `MergeSort` wyniósł #fmt-avg(summary-row(8).avg-us), podczas gdy `CocktailSort` osiągnął #fmt-avg(summary-row(4).avg-us), a `InsertionSort` #fmt-avg(summary-row(16).avg-us). Różnica jest więc bardzo duża.
+
+== Dodatkowy test: CocktailSort dla SinglyLinkedList
+
+Osobno wykonano pojedyncze uruchomienia `CocktailSort` dla `SinglyLinkedList` przy mniejszych rozmiarach danych. Taki test nie był już częścią głównego zestawu benchmarków. Jego celem było tylko pokazanie, jak szybko ta kombinacja staje się zbyt wolna.
+
+#figure(
+  image("/results/plots/cocktail_singlelist_limit.png", width: 100%),
+  caption: [Pojedyncze uruchomienia `CocktailSort` dla `SinglyLinkedList`.],
+)
+
+#figure(
+  kind: table,
+  align(center)[
+    #table(
+      columns: 3,
+      stroke: 0.6pt,
+      [Rozmiar], [Czas [us]], [Czas ścienny [s]],
+      [100], [#scan-row(100).avg-us], [#scan-row(100).wall-time-sec],
+      [200], [#scan-row(200).avg-us], [#scan-row(200).wall-time-sec],
+      [500], [#scan-row(500).avg-us], [#scan-row(500).wall-time-sec],
+      [1000], [#scan-row(1000).avg-us], [#scan-row(1000).wall-time-sec],
+      [2000], [#scan-row(2000).avg-us], [#scan-row(2000).wall-time-sec],
+      [3000], [#scan-row(3000).avg-us], [#scan-row(3000).wall-time-sec],
+      [4000], [#scan-row(4000).avg-us], [#scan-row(4000).wall-time-sec],
+      [5000], [#scan-row(5000).avg-us], [#scan-row(5000).wall-time-sec],
+    )
+  ],
+  caption: [Pojedyncze czasy dla `CocktailSort` i `SinglyLinkedList`.],
+)
+
+Już przy `5000` elementach pojedyncze sortowanie trwało #fmt-avg(scan-row(5000).avg-us), czyli około `#scan-row(5000).wall-time-sec s`. To dobrze pokazuje, dlaczego tej kombinacji nie włączono do głównego zestawu badań.
 
 == Badanie B
 
-Badanie B dotyczy wpływu rozkładu danych wejściowych. W tej części wykonano 8 benchmarków: po cztery dla `DynamicArray` i `SinglyLinkedList`. Każdy benchmark używał `MergeSort`, a zmieniano jedynie rozkład danych wejściowych. Wykresy i tabela pokazują, że dla tego algorytmu rozkład wejścia wpływa na wynik dużo słabiej niż sama liczebność zbioru w badaniu A.
+Badanie B dotyczy wpływu rozkładu danych wejściowych. W tej części wykonano 8 benchmarków: po cztery dla `DynamicArray` i `SinglyLinkedList`. Każdy benchmark używał `MergeSort`, a zmieniano jedynie rozkład danych wejściowych.
 
 #figure(
   image("/results/plots/badanie_B_array.png", width: 100%),
@@ -199,29 +237,29 @@ Badanie B dotyczy wpływu rozkładu danych wejściowych. W tej części wykonano
       columns: 5,
       stroke: 0.6pt,
       [Struktura], [Rozklad danych], [Min [us]], [Avg [us]], [Max [us]],
-      [DynamicArray], [random], [#summary-row(25).min-us], [#summary-row(25).avg-us], [#summary-row(25).max-us],
-      [DynamicArray], [ascending], [#summary-row(26).min-us], [#summary-row(26).avg-us], [#summary-row(26).max-us],
-      [DynamicArray], [ascending50Per], [#summary-row(27).min-us], [#summary-row(27).avg-us], [#summary-row(27).max-us],
-      [DynamicArray], [descending], [#summary-row(28).min-us], [#summary-row(28).avg-us], [#summary-row(28).max-us],
-      [SinglyLinkedList], [random], [#summary-row(29).min-us], [#summary-row(29).avg-us], [#summary-row(29).max-us],
-      [SinglyLinkedList], [ascending], [#summary-row(30).min-us], [#summary-row(30).avg-us], [#summary-row(30).max-us],
+      [DynamicArray], [random], [#summary-row(21).min-us], [#summary-row(21).avg-us], [#summary-row(21).max-us],
+      [DynamicArray], [ascending], [#summary-row(22).min-us], [#summary-row(22).avg-us], [#summary-row(22).max-us],
+      [DynamicArray], [ascending50Per], [#summary-row(23).min-us], [#summary-row(23).avg-us], [#summary-row(23).max-us],
+      [DynamicArray], [descending], [#summary-row(24).min-us], [#summary-row(24).avg-us], [#summary-row(24).max-us],
+      [SinglyLinkedList], [random], [#summary-row(25).min-us], [#summary-row(25).avg-us], [#summary-row(25).max-us],
+      [SinglyLinkedList], [ascending], [#summary-row(26).min-us], [#summary-row(26).avg-us], [#summary-row(26).max-us],
       [SinglyLinkedList],
       [ascending50Per],
-      [#summary-row(31).min-us],
-      [#summary-row(31).avg-us],
-      [#summary-row(31).max-us],
+      [#summary-row(27).min-us],
+      [#summary-row(27).avg-us],
+      [#summary-row(27).max-us],
 
-      [SinglyLinkedList], [descending], [#summary-row(32).min-us], [#summary-row(32).avg-us], [#summary-row(32).max-us],
+      [SinglyLinkedList], [descending], [#summary-row(28).min-us], [#summary-row(28).avg-us], [#summary-row(28).max-us],
     )
   ],
   caption: [Czas sortowania w zależności od początkowego rozkładu elementów.],
 )
 
-Dla `DynamicArray` średni czas dla rozkładu `random` wyniósł #fmt-avg(summary-row(25).avg-us), dla `ascending` #fmt-avg(summary-row(26).avg-us), dla `ascending50Per` #fmt-avg(summary-row(27).avg-us), a dla `descending` #fmt-avg(summary-row(28).avg-us). Analogiczny trend widać dla `SinglyLinkedList`, choć poziom czasów jest tam inny ze względu na inną organizację danych.
+Dla `DynamicArray` średni czas dla rozkładu `random` wyniósł #fmt-avg(summary-row(21).avg-us), dla `ascending` #fmt-avg(summary-row(22).avg-us), dla `ascending50Per` #fmt-avg(summary-row(23).avg-us), a dla `descending` #fmt-avg(summary-row(24).avg-us). Dla `SinglyLinkedList` najwolniejszy był ponownie wariant `random`, a najszybszy `descending`.
 
 == Badanie C
 
-Badanie C analizuje wpływ typu danych przy zachowaniu tego samego algorytmu, tej samej struktury oraz tego samego rozmiaru wejścia. W tej części wykonano 3 benchmarki: dla `int`, `float` i `unsigned int`. Wyniki pokazują, że w tej konfiguracji dominujący wpływ ma sam algorytm i organizacja danych, a nie drobne różnice pomiędzy badanymi typami [1][5].
+Badanie C analizuje wpływ typu danych przy zachowaniu tego samego algorytmu, tej samej struktury oraz tego samego rozmiaru wejścia. W tej części wykonano 3 benchmarki: dla `int`, `float` i `unsigned int`.
 
 #figure(
   image("/results/plots/badanie_C_types.png", width: 88%),
@@ -235,9 +273,9 @@ Badanie C analizuje wpływ typu danych przy zachowaniu tego samego algorytmu, te
       columns: 4,
       stroke: 0.6pt,
       [Typ danych], [Min [us]], [Avg [us]], [Max [us]],
-      [int], [#summary-row(33).min-us], [#summary-row(33).avg-us], [#summary-row(33).max-us],
-      [float], [#summary-row(34).min-us], [#summary-row(34).avg-us], [#summary-row(34).max-us],
-      [unsigned int], [#summary-row(35).min-us], [#summary-row(35).avg-us], [#summary-row(35).max-us],
+      [int], [#summary-row(29).min-us], [#summary-row(29).avg-us], [#summary-row(29).max-us],
+      [float], [#summary-row(30).min-us], [#summary-row(30).avg-us], [#summary-row(30).max-us],
+      [unsigned int], [#summary-row(31).min-us], [#summary-row(31).avg-us], [#summary-row(31).max-us],
     )
   ],
   caption: [Czas sortowania w zależności od typu danych.],
@@ -245,33 +283,35 @@ Badanie C analizuje wpływ typu danych przy zachowaniu tego samego algorytmu, te
 
 Średnie czasy wyniosły odpowiednio:
 
-- `int`: #fmt-avg(summary-row(33).avg-us)
-- `float`: #fmt-avg(summary-row(34).avg-us)
-- `unsigned int`: #fmt-avg(summary-row(35).avg-us)
+- `int`: #fmt-avg(summary-row(29).avg-us)
+- `float`: #fmt-avg(summary-row(30).avg-us)
+- `unsigned int`: #fmt-avg(summary-row(31).avg-us)
 
 = Analiza wyników
 
-Wyniki dobrze pokazują różnicę między `MergeSort` a pozostałymi algorytmami. `CocktailSort` i `InsertionSort` rosną znacznie szybciej wraz z rozmiarem danych, a `MergeSort` zachowuje dużo lepsze czasy [1][4][5].
+Wyniki dobrze pokazują różnicę między `MergeSort` a pozostałymi algorytmami. `MergeSort` rośnie dużo łagodniej wraz z rozmiarem danych, a `CocktailSort` i `InsertionSort` dużo szybciej.
 
 == Badanie A
 
-W badaniu A najlepiej widać wpływ rozmiaru danych. Im większy zbiór, tym większa przewaga `MergeSort`. Najmocniej widać to przy `50000` elementów, gdzie `MergeSort` jest wyraźnie szybszy od `CocktailSort` i `InsertionSort` dla obu struktur.
+W badaniu A najlepiej widać wpływ rozmiaru danych. Im większy zbiór, tym większa przewaga `MergeSort`. Dla `DynamicArray` przy `50000` elementów `MergeSort` potrzebował średnio #fmt-avg(summary-row(8).avg-us), `InsertionSort` #fmt-avg(summary-row(16).avg-us), a `CocktailSort` aż #fmt-avg(summary-row(4).avg-us). Dla `SinglyLinkedList` `MergeSort` też wyraźnie wygrywa z `InsertionSort`.
+
+Dodatkowy test `CocktailSort` dla `SinglyLinkedList` potwierdza, że ta kombinacja nie nadaje się do dużych danych. Już przy `5000` elementach pojedyncze uruchomienie trwało około `#scan-row(5000).wall-time-sec s`, więc dla większych rozmiarów taki benchmark przestaje być praktyczny.
 
 == Badanie B
 
-W badaniu B zmiana rozkładu danych wpływa na wyniki, ale nie zmienia ogólnego obrazu. `MergeSort` pozostaje stabilny, a różnice między `random`, `ascending`, `ascending50Per` i `descending` są dużo mniejsze niż różnice widoczne wcześniej między algorytmami. W naszych wynikach `ascending50Per` wypada nieco słabiej niż `descending`, co można tłumaczyć konkretnym układem danych i szczegółami wykonania [1][5].
+W badaniu B zmiana rozkładu danych wpływa na wyniki, ale nie zmienia ogólnego obrazu. `MergeSort` pozostaje stabilny, a różnice między `random`, `ascending`, `ascending50Per` i `descending` są dużo mniejsze niż różnice widoczne wcześniej między algorytmami. W obu strukturach najwolniejszy okazał się wariant `random`, a najszybsze były `ascending` i `descending`.
 
 == Badanie C
 
-Badanie C pokazuje wpływ typu danych przy stałym algorytmie, strukturze i rozmiarze wejścia. Różnice między `int`, `float` i `unsigned int` są widoczne, ale nadal mniejsze niż różnice wynikające ze zmiany algorytmu w badaniu A. Oznacza to, że w tym projekcie większe znaczenie miał wybór algorytmu niż wybór jednego z badanych typów danych [1][4][5].
+Badanie C pokazuje wpływ typu danych przy stałym algorytmie, strukturze i rozmiarze wejścia. Wynik dla `float` jest tu najwyższy, a `int` i `unsigned int` wypadają podobnie. Mimo to różnice pozostają dużo mniejsze niż te, które w badaniu A wynikały ze zmiany algorytmu.
 
 = Wnioski
 
-Najważniejszy wniosek z przeprowadzonych eksperymentów jest taki, że `MergeSort` wyraźnie dominuje przy większych rozmiarach danych. Już w badaniu A widać, że przy `50000` elementów różnica pomiędzy `MergeSort` a pozostałymi algorytmami nie jest kosmetyczna, lecz bardzo duża. Oznacza to, że przy większych wejściach przewaga złożoności `O(n log n)` przekłada się bezpośrednio na praktyczny czas działania.
+Najważniejszy wniosek jest prosty: przy większych danych najlepiej wypada `MergeSort`. W badaniu A jego czasy były wielokrotnie niższe niż czasy `CocktailSort` i `InsertionSort`, szczególnie dla `DynamicArray` przy `25000` i `50000` elementów.
 
-Drugi istotny wniosek dotyczy samej struktury danych i sposobu implementacji. `MergeSort` i `InsertionSort` można było dobrze dopasować do `SinglyLinkedList`, ponieważ oba algorytmy da się oprzeć na pracy na samych węzłach i wskaźnikach `next`. `CocktailSort` jest pod tym względem dużo mniej wygodny dla listy jednokierunkowej, dlatego jego uczciwa wersja przez `operator[]` szybko staje się zbyt wolna dla większych danych.
+Drugi wniosek dotyczy `SinglyLinkedList`. `MergeSort` i `InsertionSort` dało się zaimplementować w sposób naturalny dla listy, czyli przez pracę na węzłach i wskaźnikach `next`. `CocktailSort` nie pasuje do tej struktury tak dobrze. Uczciwa wersja przez `operator[]` działa poprawnie, ale bardzo szybko robi się zbyt wolna, co potwierdził dodatkowy test.
 
-Trzeci wniosek płynący z badań B i C jest bardziej praktyczny. Zmiana rozkładu wejścia lub prostego typu liczbowego wpływa na wyniki, ale wpływ ten jest słabszy niż zmiana samego algorytmu. W badanym zakresie to właśnie wybór algorytmu i dopasowanie go do struktury danych okazały się najważniejsze dla osiągnięcia dobrych czasów sortowania.
+Trzeci wniosek jest taki, że rozkład danych i prosty typ liczbowy mają znaczenie, ale mniejsze niż wybór algorytmu. W tym projekcie największy wpływ na wynik miało to, czy użyto `MergeSort`, czy algorytmu o zachowaniu kwadratowym.
 
 = Literatura
 

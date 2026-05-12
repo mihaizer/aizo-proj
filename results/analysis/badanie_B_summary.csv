@@ -1,9 +1,9 @@
-task_id,badanie,timestamp,algorithm,structure,data_type,distribution,size,iterations,min_us,avg_us,max_us,status
-25,B,2026-05-11 20:56:51,merge,array,int,random,25000,50,4391,4425.08,4894,OK
-26,B,2026-05-11 20:56:51,merge,array,int,ascending,25000,50,2379,2388.5,2506,OK
-27,B,2026-05-11 20:56:51,merge,array,int,ascending50Per,25000,50,3455,3482.3,3906,OK
-28,B,2026-05-11 20:56:52,merge,array,int,descending,25000,50,2345,2361.16,2511,OK
-29,B,2026-05-11 20:56:52,merge,singleList,int,random,25000,50,3194,3236.94,3386,OK
-30,B,2026-05-11 20:56:52,merge,singleList,int,ascending,25000,50,1372,1396.62,1722,OK
-31,B,2026-05-11 20:56:53,merge,singleList,int,ascending50Per,25000,50,2335,2357.72,2467,OK
-32,B,2026-05-11 20:56:53,merge,singleList,int,descending,25000,50,1331,1339.36,1391,OK
+task_id,badanie,timestamp,algorithm,structure,data_type,distribution,size,iterations,min_us,avg_us,max_us
+21,B,2026-05-12 02:34:57,merge,array,int,random,25000,50,4391,4508.94,5375
+22,B,2026-05-12 02:34:58,merge,array,int,ascending,25000,50,2377,2413.42,2749
+23,B,2026-05-12 02:34:58,merge,array,int,ascending50Per,25000,50,3456,3505.08,3950
+24,B,2026-05-12 02:34:58,merge,array,int,descending,25000,50,2352,2397.76,3164
+25,B,2026-05-12 02:34:59,merge,singleList,int,random,25000,50,3289,3340.98,3975
+26,B,2026-05-12 02:34:59,merge,singleList,int,ascending,25000,50,1378,1400.7,1497
+27,B,2026-05-12 02:34:59,merge,singleList,int,ascending50Per,25000,50,2405,2421.2,2533
+28,B,2026-05-12 02:34:59,merge,singleList,int,descending,25000,50,1375,1389.48,1460
