@@ -65,7 +65,7 @@ Celem projektu było zaimplementowanie programu sortującego dane rosnąco oraz 
 
 W zakresie wymaganym na ocenę `3.0` zaimplementowano algorytmy `CocktailSort`, `MergeSort` i `InsertionSort` oraz dwie własne struktury liniowe: `DynamicArray` i `SinglyLinkedList`. Program oprócz samego sortowania sprawdza poprawność wyniku i zapisuje wyniki pomiarów do pliku CSV.
 
-Część eksperymentalna obejmuje trzy części: `Badanie A`, `Badanie B` i `Badanie C`. Ich szczegółowy układ oraz sposób interpretacji wyników zostały opisane w rozdziale `Metodyka badań`.
+Eksperyment obejmuje trzy główne badania: `Badanie A`, `Badanie B` i `Badanie C`. Ich szczegółowy układ oraz sposób interpretacji wyników zostały opisane w rozdziale `Metodyka badań`.
 
 Program uruchamiano na komputerze `MacBook Air M1` z `8 GB RAM`. Główne wyniki pochodzą z pliku `results/research_data_without_cocktail_singlelist.csv`, a dodatkowy test dla `CocktailSort` i `SinglyLinkedList` z pliku `results/cocktail_singlelist_limit_status.csv`.
 
@@ -76,7 +76,7 @@ Eksperyment został podzielony na trzy części: `Badanie A`, `Badanie B` i `Bad
 
 W pliku CSV zapisano surowy czas każdej iteracji. Wartości `min_us`, `avg_us` i `max_us` pojawiają się tylko w ostatnim wierszu danego bloku 50 iteracji.
 
-Rozkład benchmarków pomiędzy główne badania był następujący:
+Podział benchmarków pomiędzy główne badania był następujący:
 
 - `Badanie A` obejmuje 20 benchmarków:
   `CocktailSort` dla `DynamicArray`, `MergeSort` dla `DynamicArray` i `SinglyLinkedList` oraz `InsertionSort` dla `DynamicArray` i `SinglyLinkedList`, zawsze dla rozmiarów `5000`, `10000`, `25000` i `50000`.
@@ -108,7 +108,7 @@ W praktyce ta struktura jest używana inaczej niż `DynamicArray`. `MergeSort` i
 
 `CocktailSort` wykonuje dwa przejścia w obrębie aktualnego zakresu danych: najpierw od lewej do prawej, przesuwając większe elementy ku końcowi, a następnie od prawej do lewej, przesuwając mniejsze elementy ku początkowi. Dla `DynamicArray` algorytm korzysta bezpośrednio z `operator[]` i `swap()`.
 
-Dla `SinglyLinkedList` nie przygotowano osobnej wersji tego algorytmu. `CocktailSort` wymaga przejść w obie strony, a lista jednokierunkowa nie pozwala wygodnie wracać do poprzednich elementów. Z tego powodu w obecnej wersji programu dla `SinglyLinkedList` pozostawiono tylko fallback przez `operator[]` z interfejsu `IStructure<T>`. Taki wariant jest poprawny, ale bardzo wolny. Sam `CocktailSort` ma złożoność `O(n^2)`, a pojedynczy dostęp do elementu listy przez indeks kosztuje `O(n)`, więc w praktyce ta kombinacja zbliża się do `O(n^3)` [3][5].
+Dla `SinglyLinkedList` nie przygotowano osobnej implementacji tego algorytmu. `CocktailSort` wymaga przejść w obie strony, a lista jednokierunkowa nie pozwala wygodnie wracać do poprzednich elementów. Z tego powodu w obecnej wersji programu dla `SinglyLinkedList` pozostawiono tylko fallback przez `operator[]` z interfejsu `IStructure<T>`. Taki wariant jest poprawny, ale bardzo wolny. Sam `CocktailSort` ma złożoność `O(n^2)`, a pojedynczy dostęp do elementu listy przez indeks kosztuje `O(n)`, więc w praktyce ta kombinacja zbliża się do `O(n^3)` [3][5].
 
 == Algorytm MergeSort
 
@@ -187,7 +187,7 @@ Przykładowo dla `DynamicArray` i rozmiaru `50000` średni czas `MergeSort` wyni
 
 == Dodatkowy test: CocktailSort dla SinglyLinkedList
 
-Osobno wykonano pojedyncze uruchomienia `CocktailSort` dla `SinglyLinkedList` przy mniejszych rozmiarach danych. Taki test nie był już częścią głównego zestawu benchmarków. Jego celem było tylko pokazanie, jak szybko ta kombinacja staje się zbyt wolna.
+Osobno wykonano pojedyncze uruchomienia `CocktailSort` dla `SinglyLinkedList` przy mniejszych rozmiarach danych. Test ten nie należał do głównego zestawu benchmarków. Jego celem było pokazanie, jak szybko ta kombinacja staje się zbyt wolna.
 
 #figure(
   image("/results/plots/cocktail_singlelist_limit.png", width: 100%),
@@ -200,7 +200,7 @@ Osobno wykonano pojedyncze uruchomienia `CocktailSort` dla `SinglyLinkedList` pr
     #table(
       columns: 3,
       stroke: 0.6pt,
-      [Rozmiar], [Czas [us]], [Czas ścienny [s]],
+      [Rozmiar], [Czas [us]], [Czas wykonania [s]],
       [100], [#scan-row(100).avg-us], [#scan-row(100).wall-time-sec],
       [200], [#scan-row(200).avg-us], [#scan-row(200).wall-time-sec],
       [500], [#scan-row(500).avg-us], [#scan-row(500).wall-time-sec],
