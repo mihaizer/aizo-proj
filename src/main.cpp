@@ -539,17 +539,37 @@ namespace
         return 0;
     }
 
-    int appendBenchmarkCsvRow(std::ofstream &file, int iterationId, long long duration_us)
+    int writeBenchmarkCsvBlock(std::ofstream &file,
+                               const DynamicArray<long long> &durations,
+                               long long min_us,
+                               double avg_us,
+                               long long max_us)
     {
-        file << getCurrentTimestamp() << ",";
-        file << algorithmToString(Parameters::algorithm) << ",";
-        file << structureToString(Parameters::structure) << ",";
-        file << dataTypeToString(Parameters::dataType) << ",";
-        file << distributionToString(Parameters::distribution) << ",";
-        file << Parameters::structureSize << ",";
-        file << Parameters::iterations << ",";
-        file << iterationId << ",";
-        file << duration_us << ",,,\n";
+        for (int i = 0; i < durations.size(); i++)
+        {
+            file << getCurrentTimestamp() << ",";
+            file << algorithmToString(Parameters::algorithm) << ",";
+            file << structureToString(Parameters::structure) << ",";
+            file << dataTypeToString(Parameters::dataType) << ",";
+            file << distributionToString(Parameters::distribution) << ",";
+            file << Parameters::structureSize << ",";
+            file << Parameters::iterations << ",";
+            file << (i + 1) << ",";
+            file << durations[i] << ",";
+
+            if (i == durations.size() - 1)
+            {
+                file << min_us << ",";
+                file << std::fixed << std::setprecision(2) << avg_us << ",";
+                file << max_us << "\n";
+                file.unsetf(std::ios::floatfield);
+            }
+            else
+            {
+                file << ",,\n";
+            }
+        }
+
         file.flush();
 
         if (!file.good())
@@ -569,24 +589,6 @@ namespace
         // Przechowujemy czasy kazdej iteracji w naszej wlasnej tablicy dynamicznej.
         DynamicArray<long long> durations;
         long long total_us = 0;
-        std::ofstream resultsFile;
-
-        if (!Parameters::resultsFile.empty())
-        {
-            if (ensureBenchmarkCsvReady(Parameters::resultsFile) != 0)
-            {
-                return 1;
-            }
-
-            resultsFile.open(Parameters::resultsFile, std::ios::app);
-            if (!resultsFile.is_open())
-            {
-                std::cerr << "ERROR: could not open results file " << Parameters::resultsFile
-                          << " for appending.\n";
-                return 1;
-            }
-        }
-
         for (int iteration = 0; iteration < Parameters::iterations; iteration++)
         {
             Structure values;
@@ -623,14 +625,6 @@ namespace
             long long duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
             durations.pushBack(duration);
             total_us += duration;
-
-            if (resultsFile.is_open())
-            {
-                if (appendBenchmarkCsvRow(resultsFile, iteration + 1, duration) != 0)
-                {
-                    return 1;
-                }
-            }
         }
 
         long long min_us = durations[0];
@@ -646,6 +640,27 @@ namespace
         std::cout << "  min: " << min_us << " us\n";
         std::cout << "  avg: " << std::fixed << std::setprecision(2) << avg_us << " us\n";
         std::cout << "  max: " << max_us << " us\n";
+
+        if (!Parameters::resultsFile.empty())
+        {
+            if (ensureBenchmarkCsvReady(Parameters::resultsFile) != 0)
+            {
+                return 1;
+            }
+
+            std::ofstream resultsFile(Parameters::resultsFile, std::ios::app);
+            if (!resultsFile.is_open())
+            {
+                std::cerr << "ERROR: could not open results file " << Parameters::resultsFile
+                          << " for appending.\n";
+                return 1;
+            }
+
+            if (writeBenchmarkCsvBlock(resultsFile, durations, min_us, avg_us, max_us) != 0)
+            {
+                return 1;
+            }
+        }
 
         return 0;
     }
